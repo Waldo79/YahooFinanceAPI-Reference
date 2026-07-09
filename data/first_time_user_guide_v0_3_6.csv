@@ -1,0 +1,8 @@
+step_id,step_number,step_title,instruction,audience,primary_file
+STEP001,1,Open the repository README,"Read the project purpose, scope, and current release status.",Anyone arriving at the GitHub page,README.md
+STEP002,2,Download the latest release package,"Use the normal commit-ready ZIP first. If extraction fails, use 7-Zip.",Windows and non-programmer users,GitHub Releases
+STEP003,3,Open the workbook or CSV files,Start with the master field database and result interpretation rules.,Users reviewing fields or test results,data/master_field_database.csv
+STEP004,4,Run only tests you can actually perform,"If using a symbol lookup app, enter symbols or symbol lists, not raw Yahoo endpoint URLs unless the app says it supports URLs.",Black-box app users,data/user_accessible_test_plan.csv
+STEP005,5,Record requested and returned symbols,Compare requested symbols with returned symbols before deciding whether Yahoo changed behavior.,Users running symbol tests,templates/symbol_lookup_run_log_template.csv
+STEP006,6,Classify the result,"Use the result interpretation rules to distinguish success, partial results, nulls, missing symbols, app compatibility limits, and schema drift.",Users reporting observations,data/result_interpretation_rules.csv
+STEP007,7,Submit an observation,"Include date/time, symbol(s), endpoint or app feature, result state, raw output if available, and expected vs actual behavior.",Contributors,templates/change_record_template.csv

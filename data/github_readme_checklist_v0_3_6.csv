@@ -1,0 +1,8 @@
+check_id,check_name,description,status
+CHK001,Purpose is visible in first screen,README immediately says this is a public Yahoo Finance API reference/change-tracking project.,pass
+CHK002,Non-scope is explicit,README says the project is not official Yahoo documentation and not primarily an app-debugging project.,pass
+CHK003,Non-programmer path exists,README explains how to use ZIP/workbook/CSV files without programming.,pass
+CHK004,Observation reporting path exists,README explains how users can report changes or anomalies.,pass
+CHK005,Repo map exists,README summarizes key folders and where files belong.,pass
+CHK006,Current status exists,README names the current release and notes 198 master field rows.,pass
+CHK007,App developer participation is supported but secondary,README allows future app developer contributions without making app development the main purpose.,pass

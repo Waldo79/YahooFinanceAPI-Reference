@@ -1,0 +1,8 @@
+section_id,title,audience,purpose,status,source_file
+LP001,Project purpose,First-time public visitor,Explain that this is a public reference and change-tracking project for observed Yahoo Finance API behavior.,active,README.md
+LP002,What this project tracks,"Public users, contributors, app developers","List fields, schemas, endpoint outputs, symbol coverage, market states, null/missing results, and schema drift.",active,README.md
+LP003,What this project does not do,First-time public visitor,"Set boundaries: not official Yahoo documentation, not a trading system, not primarily app debugging or software development.",active,README.md
+LP004,Quick start,Non-programmer users,"Show the simplest path: download release, open workbook/CSV, run a symbol lookup, report observations.",active,README.md
+LP005,Repository map,All users,Explain major folders and where public users should look first.,active,README.md
+LP006,How to report changes,Public contributors,Describe the observation report workflow and minimum information needed.,active,README.md
+LP007,Current status,Maintainers and contributors,"Summarize current release status, master field row count, and known black-box app limitations.",active,README.md

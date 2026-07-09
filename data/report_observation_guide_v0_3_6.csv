@@ -1,0 +1,8 @@
+guide_id,topic,guidance,priority
+OBS001,Minimum observation metadata,"Date/time, timezone, user-visible tool or endpoint, symbols tested, requested input, returned output, and result state.",required
+OBS002,Evidence to include,"Raw JSON, CSV output, screenshot, copied app error text, or downloaded file produced by the test.",strongly recommended
+OBS003,Do not over-interpret app behavior,"If using a third-party app symbol lookup box, do not call Search/Screener/Chart URL failures Yahoo endpoint failures unless the app supports direct URLs.",required
+OBS004,Requested vs returned symbols,"For batch quote tests, list both requested symbols and returned symbols. Missing requested symbols are a distinct finding.",required
+OBS005,Null versus empty result,"Use the interpretation rules. Null result, empty result, HTTP error, and missing-symbol result are different conditions.",required
+OBS006,Repeatability,"Where practical, repeat the test later or with a control symbol before promoting an observation to a confirmed change.",recommended
+OBS007,Privacy and licensing,"Do not include private account data, credentials, cookies, or proprietary app source code in public observations.",required
