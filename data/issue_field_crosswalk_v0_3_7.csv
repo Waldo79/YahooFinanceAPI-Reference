@@ -1,0 +1,15 @@
+Field,Required?,Used by templates,Description
+Observation date/time,Required,all,When the behavior was observed. Include timezone if known.
+Endpoint or feature tested,Required,all,"Yahoo endpoint URL, app feature, or symbol lookup mode used."
+Symbols requested,Required where applicable,"symbol_missing, special_symbol_problem, marketstate_observation",The exact ticker/symbol input supplied by the user or tool.
+Symbols returned,Required where applicable,symbol_missing,Symbols actually present in the output.
+Missing symbols,Required for symbol anomalies,symbol_missing,Requested symbols not present in the returned result set.
+Result state,Required,"endpoint_empty_null, symbol_missing, schema_drift","Use project labels such as SUCCESS, EMPTY_RESULT, NULL_RESULT, PARTIAL_SYMBOL_RESULT, etc."
+Raw response excerpt,Strongly recommended,all technical observations,Small JSON/error excerpt sufficient to support the observation.
+Full raw file attached,Recommended,all technical observations,Attach a raw capture if possible; avoid screenshots when JSON/text is available.
+Tool/app used,Recommended,all black-box observations,"Browser, script, third-party app, or manual symbol lookup feature."
+HTTP status,Optional,"endpoint_empty_null, schema_drift",Useful when available; not required for black-box app users.
+Expected behavior,Recommended,all,What the reporter expected based on prior output or project reference.
+Observed behavior,Required,all,What actually happened.
+Repeatability,Recommended,all,"One-time, repeated, intermittent, or unknown."
+Security type,Recommended,"marketstate_observation, mutual_fund_nav_timing","Stock, ETF, closed-end fund, mutual fund, future, index, crypto, forex."

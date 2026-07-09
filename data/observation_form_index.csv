@@ -1,0 +1,9 @@
+form_id,form_name,best_for,minimum_user_inputs,evidence_to_attach,classification_goal
+OF001,Field added/removed/changed,Field-level API changes,field name; endpoint; symbol; observation date; observed behavior,raw JSON excerpt or CSV difference,Confirm field change vs one-off capture anomaly
+OF002,Symbol missing from result,Batch lookups where one requested symbol disappears,requested symbols; returned symbols; missing symbols; date/time,raw response or app output text,Separate partial symbol result from endpoint failure
+OF003,Endpoint empty/null result,Search/screener/chart/quote summary empty or null outputs,endpoint or app feature; input; result state; date/time,raw response/error text,"Distinguish null result, empty result, HTTP error, and app incompatibility"
+OF004,MarketState observation,Tracking marketState values by security type and time,symbol; security type; observed marketState; timestamp,quote endpoint response,Build observed marketState reference table
+OF005,Schema drift,Nested JSON layout changes,endpoint; old path; new path; symbol type; date observed,before/after JSON snippets,Document path movement or object model change
+OF006,Bad/stale data,Quote values inconsistent with timestamp or expected market behavior,symbol; fields; observed values; timestamp; why suspicious,raw response plus comparison if available,Flag data quality issue without over-claiming
+OF007,Mutual fund / NAV timing,NAV posting and applicability behavior,fund symbol; NAV/price fields; time observed; marketState,fund quote response,Track NAV timing and stale prior-day values
+OF008,Special symbol problem,"Symbols using ^, =, -USD, =X or encoding",raw symbol; encoded form if known; endpoint/feature; returned symbol,raw response or app output,Identify encoding/symbol-normalization problems
