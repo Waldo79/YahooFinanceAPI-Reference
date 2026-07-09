@@ -1,0 +1,40 @@
+enum_group,value,meaning,applies_to,csv_guidance
+marketState,PREPRE,Before pre-market / very early pre-market,quote.marketState,Store as text; warn on unknown but do not fail
+marketState,PRE,Pre-market,quote.marketState,Store as text; warn on unknown but do not fail
+marketState,REGULAR,Regular market session,quote.marketState,Store as text; warn on unknown but do not fail
+marketState,POST,Post-market,quote.marketState,Store as text; warn on unknown but do not fail
+marketState,POSTPOST,Late post-market,quote.marketState,Store as text; warn on unknown but do not fail
+marketState,CLOSED,Market closed,quote.marketState,Store as text; warn on unknown but do not fail
+marketState,HALTED,Trading halted,quote.marketState,Store as text; warn on unknown but do not fail
+marketState,DELAYED,Delayed state occasionally observed,quote.marketState,Store as text; warn on unknown but do not fail
+marketState,OPEN,Open state in some regions/contexts,quote.marketState,Store as text; warn on unknown but do not fail
+quoteType/instrumentType,EQUITY,Common stock/equity,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+quoteType/instrumentType,ETF,Exchange-traded fund,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+quoteType/instrumentType,MUTUALFUND,Mutual fund,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+quoteType/instrumentType,INDEX,Index,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+quoteType/instrumentType,CURRENCY,Foreign exchange pair,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+quoteType/instrumentType,CRYPTOCURRENCY,Cryptocurrency pair,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+quoteType/instrumentType,FUTURE,Futures contract,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+quoteType/instrumentType,OPTION,Option contract,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+quoteType/instrumentType,ECNQUOTE,ECN quote context; rare,quote.quoteType; chart.instrumentType,Use for routing; allow new values
+contractSize,REGULAR,Standard option contract size,options.contractSize,Store as text
+contractSize,MINI,Mini option,options.contractSize,Store as text
+contractSize,UNKNOWN,Unknown/unspecified,options.contractSize,Store as text
+currency,USD,USD currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+currency,EUR,EUR currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+currency,GBP,GBP currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+currency,JPY,JPY currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+currency,CAD,CAD currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+currency,AUD,AUD currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+currency,CHF,CHF currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+currency,CNY,CNY currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+currency,HKD,HKD currency code as returned by Yahoo,currency fields,Not exhaustive; allow new ISO-style values
+result_state,OK,HTTP success and expected non-empty JSON shape returned,_capture.result_state,Proceed to endpoint parser
+result_state,HTTP_ERROR_429,Yahoo returned HTTP 429 Too Many Requests,_capture.result_state,Back off; do not mark symbol invalid
+result_state,HTTP_ERROR_401_403,Yahoo returned unauthorized/forbidden response,_capture.result_state,Refresh session/headers or skip protected endpoint
+result_state,HTTP_ERROR_OTHER,Non-2xx HTTP status other than known access codes,_capture.result_state,Retry with logging; preserve body prefix
+result_state,EMPTY_RESULT,HTTP success but expected result array count is zero,_capture.result_state,Cross-check symbol through quote/search/chart
+result_state,NULL_RESULT,HTTP success but top-level result is null,_capture.result_state,Treat as endpoint/schema anomaly; preserve raw JSON
+result_state,YAHOO_ERROR_OBJECT,Yahoo JSON error object is populated,_capture.result_state,Store error code/description and skip field extraction
+result_state,JSON_PARSE_ERROR,Response could not be parsed as JSON,_capture.result_state,Log content type/body prefix; do not emit financial rows
+result_state,SCHEMA_DRIFT,JSON parses but expected path moved or changed type,_capture.result_state,Add unknown fields to schema review queue

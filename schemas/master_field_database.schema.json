@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "YahooFinanceAPI-Reference Master Field Database Row",
+  "type": "object",
+  "required": [
+    "field_id",
+    "field_name",
+    "canonical_csv_name",
+    "endpoint",
+    "json_path",
+    "parent_object",
+    "yahoo_type",
+    "csv_type",
+    "applies_to",
+    "field_category",
+    "description",
+    "nullable",
+    "presence",
+    "evidence_status",
+    "parser_action",
+    "first_seen_release",
+    "last_reviewed_date",
+    "status"
+  ],
+  "properties": {
+    "field_id": {
+      "type": "string"
+    },
+    "field_name": {
+      "type": "string"
+    },
+    "canonical_csv_name": {
+      "type": "string"
+    },
+    "endpoint": {
+      "type": "string"
+    },
+    "json_path": {
+      "type": "string"
+    },
+    "parent_object": {
+      "type": "string"
+    },
+    "yahoo_type": {
+      "type": "string"
+    },
+    "csv_type": {
+      "type": "string"
+    },
+    "db_type": {
+      "type": "string"
+    },
+    "applies_to": {
+      "type": "string"
+    },
+    "field_category": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "units": {
+      "type": "string"
+    },
+    "enum_group": {
+      "type": "string"
+    },
+    "update_frequency": {
+      "type": "string"
+    },
+    "nullable": {
+      "type": "string"
+    },
+    "presence": {
+      "type": "string"
+    },
+    "stability": {
+      "type": "string"
+    },
+    "evidence_status": {
+      "type": "string"
+    },
+    "evidence_symbols": {
+      "type": "string"
+    },
+    "evidence_market_states": {
+      "type": "string"
+    },
+    "example_value": {
+      "type": "string"
+    },
+    "formula_relationship": {
+      "type": "string"
+    },
+    "related_fields": {
+      "type": "string"
+    },
+    "validation_rule": {
+      "type": "string"
+    },
+    "parser_action": {
+      "type": "string"
+    },
+    "flattening_rule": {
+      "type": "string"
+    },
+    "collision_group": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "developer_notes": {
+      "type": "string"
+    },
+    "first_seen_release": {
+      "type": "string"
+    },
+    "last_reviewed_date": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "properties_extra_notes": {
+    "status": "Allowed values: draft, active, deprecated, needs_review",
+    "nullable": "Allowed values: Yes, No",
+    "presence": "Recommended values: Common, Conditional, Derived, Rare"
+  }
+}

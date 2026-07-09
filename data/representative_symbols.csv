@@ -1,0 +1,17 @@
+security_type,symbol,description,target_endpoints,reason,capture_notes
+Equity,AAPL,Apple Inc.,quote;chart;quoteSummary;options,Core equity with broad fields,capture each market state
+Equity,MSFT,Microsoft Corporation,quote;chart;quoteSummary;options,Second equity control,capture each market state
+ETF,SPY,SPDR S&P 500 ETF Trust,quote;chart;quoteSummary;options,Large ETF; optionable,capture each market state
+ETF,QQQI,NEOS Nasdaq-100 High Income ETF,quote;chart;quoteSummary,User captured actual Yahoo JSON; ETF/fund-like fields,capture each market state
+Closed-End Fund,PDI,PIMCO Dynamic Income Fund,quote;chart;quoteSummary,CEF/distribution behavior,regular and closed important
+Closed-End Fund,NAC,Nuveen California Quality Municipal Income Fund,quote;chart;quoteSummary,User captured actual Yahoo JSON; municipal CEF,regular and closed important
+Mutual Fund,VTSAX,Vanguard Total Stock Market Index Fund Admiral Shares,quote;chart;quoteSummary,Daily NAV behavior,closed/after close important
+Mutual Fund,XNACX,Nuveen California fund symbol,quote;chart;quoteSummary,User captured actual Yahoo JSON; mutual fund coverage,closed/after close important
+Index,^GSPC,S&P 500 Index,quote;chart,Index level behavior,regular and closed important
+Index,^TNX,CBOE 10 Year Treasury Note Yield Index,quote;chart,Yield/index proxy behavior,regular and closed important
+Crypto,BTC-USD,Bitcoin USD,quote;chart;spark,24/7 asset behavior,weekend and closed-state comparison
+Crypto,ETH-USD,Ethereum USD,quote;chart;spark,Second crypto control,weekend and closed-state comparison
+Forex,EURUSD=X,EUR/USD,quote;chart,FX fields; volume often missing/zero,multiple sessions
+Forex,GBPUSD=X,GBP/USD,quote;chart,Second FX control,multiple sessions
+Future,CL=F,Crude Oil Futures,quote;chart,Futures contract behavior,regular and closed important
+Future,ZT=F,2-Year T-Note Futures,quote;chart,User captured actual Yahoo JSON; futures coverage,regular and closed important

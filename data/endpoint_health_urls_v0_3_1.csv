@@ -1,0 +1,10 @@
+health_check_id,endpoint,symbol_or_query,url,expected_shape,minimum_success_count,notes
+HC001,quote,AAPL,https://query1.finance.yahoo.com/v7/finance/quote?symbols=AAPL,quoteResponse.result[],1,"Primary symbol health check. If this fails with 429/403, do not classify AAPL as invalid."
+HC002,search,AAPL,https://query1.finance.yahoo.com/v1/finance/search?q=AAPL,quotes[],1,Ticker search check.
+HC003,search,Apple,https://query1.finance.yahoo.com/v1/finance/search?q=Apple,quotes[],1,Company-name fallback if q=AAPL returns empty.
+HC004,chart,AAPL,https://query1.finance.yahoo.com/v8/finance/chart/AAPL?range=1mo&interval=1d&events=div%2Csplits,chart.result[],1,Use encoded comma in events parameter.
+HC005,screener,most_actives,https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds=most_actives,finance.result[],1,Endpoint health check; not symbol-specific.
+HC006,quote,NAC,https://query1.finance.yahoo.com/v7/finance/quote?symbols=NAC,quoteResponse.result[],1,CEF control previously captured successfully.
+HC007,quote,XNACX,https://query1.finance.yahoo.com/v7/finance/quote?symbols=XNACX,quoteResponse.result[],1,Mutual fund/NAV control previously captured successfully.
+HC008,quote,QQQI,https://query1.finance.yahoo.com/v7/finance/quote?symbols=QQQI,quoteResponse.result[],1,ETF control previously captured successfully.
+HC009,quote,ZT=F,https://query1.finance.yahoo.com/v7/finance/quote?symbols=ZT%3DF,quoteResponse.result[],1,Futures control; URL-encode '=' in scripted requests when constructing query strings.

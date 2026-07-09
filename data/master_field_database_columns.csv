@@ -1,0 +1,35 @@
+column,definition,requirement,example
+field_id,Stable unique ID. Never reuse after deletion; mark deprecated instead.,Required,YF00001
+field_name,Raw Yahoo field name or derived/inferred field label.,Required,regularMarketPrice
+canonical_csv_name,"Preferred CSV/database column name, stable across releases.",Required,regular_market_price
+endpoint,Endpoint family that exposes the field.,Required,quote
+json_path,Dot/bracket path to the raw JSON field. Use semicolon-separated paths for shared fields.,Required,quoteResponse.result[].symbol
+parent_object,Immediate containing JSON object or array.,Required,quoteResponse.result[]
+yahoo_type,"Observed Yahoo/JSON type, including array and epoch-unit hints.",Required,unix seconds
+csv_type,Recommended CSV export type.,Required,DATETIME
+db_type,Recommended database type.,Optional,BIGINT + TIMESTAMP
+applies_to,Security types or endpoint contexts where field applies.,Required,Equity;ETF;Fund
+field_category,Functional grouping.,Required,Market Data
+description,Plain-English meaning.,Required,Latest regular-session price
+units,"Units and scale. Critical for timestamps, percentages, and prices.",Recommended,Percent units
+enum_group,Enumeration lookup group if applicable.,Optional,marketState
+update_frequency,Expected refresh/update cadence.,Recommended,Intraday/delayed
+nullable,Whether null/missing is allowed.,Required,Yes
+presence,"How often field appears: Common, Conditional, Derived, Rare.",Required,Common
+stability,Expected schema/value stability.,Recommended,Stable
+evidence_status,Observed/Derived/Inferred/Seeded status.,Required,Observed
+evidence_symbols,Semicolon-separated symbols used to observe/confirm field.,Recommended,AAPL;MSFT
+evidence_market_states,Market states where observed or to be captured.,Recommended,REGULAR;CLOSED
+example_value,"Representative value, not investment data.",Optional,190.54
+formula_relationship,"Known formula or relationship, if any.",Optional,regularMarketPrice - regularMarketPreviousClose
+related_fields,Semicolon-separated related fields.,Optional,regularMarketPrice;regularMarketPreviousClose
+validation_rule,Soft/hard validation rule for parser tests.,Recommended,Must not be blank
+parser_action,"Map, Derived, Ignore, Preserve Raw, Child Rows.",Required,Map
+flattening_rule,How JSON should be flattened to CSV/database rows.,Recommended,One quote row per symbol
+collision_group,Group for fields with same raw name in different endpoints.,Optional,price
+source_url,Representative URL pattern or capture URL.,Recommended,https://query1.finance.yahoo.com/v7/finance/quote?symbols=AAPL
+developer_notes,Implementation notes and caveats.,Optional,Preserve exact symbol punctuation.
+first_seen_release,Project release where row first entered.,Required,v0.3.0
+last_reviewed_date,ISO date last reviewed.,Required,2026-07-09
+status,"draft, active, deprecated, needs_review.",Required,draft
+field_category,"Rows may use Request Diagnostics or Endpoint Diagnostics for capture/run metadata, not only raw Yahoo financial fields.",Optional category values allowed,Request Diagnostics

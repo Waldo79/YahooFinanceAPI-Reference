@@ -1,0 +1,135 @@
+symbol,security_type,endpoint,target_market_state,status,notes
+AAPL,Equity,quote,REGULAR,needs_retest,Capture during regular session; capture each market state | v0.3.1: re-run with HTTP status/result_state capture after null-results report.
+AAPL,Equity,quote,PREPRE,needs_retest,Market-state coverage; manual capture approx 3 minutes | v0.3.1: re-run with HTTP status/result_state capture after null-results report.
+AAPL,Equity,quote,PRE,needs_retest,Market-state coverage; manual capture approx 3 minutes | v0.3.1: re-run with HTTP status/result_state capture after null-results report.
+AAPL,Equity,quote,POST,needs_retest,Market-state coverage; manual capture approx 3 minutes | v0.3.1: re-run with HTTP status/result_state capture after null-results report.
+AAPL,Equity,quote,POSTPOST,needs_retest,Market-state coverage; manual capture approx 3 minutes | v0.3.1: re-run with HTTP status/result_state capture after null-results report.
+AAPL,Equity,quote,CLOSED,needs_retest,Market-state coverage; manual capture approx 3 minutes | v0.3.1: re-run with HTTP status/result_state capture after null-results report.
+AAPL,Equity,chart,REGULAR,needs_retest,Capture during regular session; capture each market state | v0.3.1: re-run with HTTP status/result_state capture after null-results report.
+AAPL,Equity,quoteSummary,REGULAR,draft,Capture during regular session; capture each market state
+AAPL,Equity,options,REGULAR,draft,Capture during regular session; capture each market state
+MSFT,Equity,quote,REGULAR,draft,Capture during regular session; capture each market state
+MSFT,Equity,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+MSFT,Equity,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+MSFT,Equity,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+MSFT,Equity,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+MSFT,Equity,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+MSFT,Equity,chart,REGULAR,draft,Capture during regular session; capture each market state
+MSFT,Equity,quoteSummary,REGULAR,draft,Capture during regular session; capture each market state
+MSFT,Equity,options,REGULAR,draft,Capture during regular session; capture each market state
+SPY,ETF,quote,REGULAR,draft,Capture during regular session; capture each market state
+SPY,ETF,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+SPY,ETF,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+SPY,ETF,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+SPY,ETF,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+SPY,ETF,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+SPY,ETF,chart,REGULAR,draft,Capture during regular session; capture each market state
+SPY,ETF,quoteSummary,REGULAR,draft,Capture during regular session; capture each market state
+SPY,ETF,options,REGULAR,draft,Capture during regular session; capture each market state
+QQQI,ETF,quote,REGULAR,draft,Capture during regular session; capture each market state
+QQQI,ETF,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+QQQI,ETF,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+QQQI,ETF,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+QQQI,ETF,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+QQQI,ETF,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+QQQI,ETF,chart,REGULAR,draft,Capture during regular session; capture each market state
+QQQI,ETF,quoteSummary,REGULAR,draft,Capture during regular session; capture each market state
+PDI,Closed-End Fund,quote,REGULAR,draft,Capture during regular session; regular and closed important
+PDI,Closed-End Fund,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+PDI,Closed-End Fund,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+PDI,Closed-End Fund,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+PDI,Closed-End Fund,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+PDI,Closed-End Fund,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+PDI,Closed-End Fund,chart,REGULAR,draft,Capture during regular session; regular and closed important
+PDI,Closed-End Fund,quoteSummary,REGULAR,draft,Capture during regular session; regular and closed important
+NAC,Closed-End Fund,quote,REGULAR,draft,Capture during regular session; regular and closed important
+NAC,Closed-End Fund,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+NAC,Closed-End Fund,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+NAC,Closed-End Fund,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+NAC,Closed-End Fund,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+NAC,Closed-End Fund,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+NAC,Closed-End Fund,chart,REGULAR,draft,Capture during regular session; regular and closed important
+NAC,Closed-End Fund,quoteSummary,REGULAR,draft,Capture during regular session; regular and closed important
+VTSAX,Mutual Fund,quote,REGULAR,draft,Capture during regular session; closed/after close important
+VTSAX,Mutual Fund,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+VTSAX,Mutual Fund,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+VTSAX,Mutual Fund,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+VTSAX,Mutual Fund,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+VTSAX,Mutual Fund,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+VTSAX,Mutual Fund,chart,REGULAR,draft,Capture during regular session; closed/after close important
+VTSAX,Mutual Fund,quoteSummary,REGULAR,draft,Capture during regular session; closed/after close important
+XNACX,Mutual Fund,quote,REGULAR,draft,Capture during regular session; closed/after close important
+XNACX,Mutual Fund,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+XNACX,Mutual Fund,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+XNACX,Mutual Fund,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+XNACX,Mutual Fund,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+XNACX,Mutual Fund,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+XNACX,Mutual Fund,chart,REGULAR,draft,Capture during regular session; closed/after close important
+XNACX,Mutual Fund,quoteSummary,REGULAR,draft,Capture during regular session; closed/after close important
+^GSPC,Index,quote,REGULAR,draft,Capture during regular session; regular and closed important
+^GSPC,Index,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+^GSPC,Index,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+^GSPC,Index,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+^GSPC,Index,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+^GSPC,Index,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+^GSPC,Index,chart,REGULAR,draft,Capture during regular session; regular and closed important
+^TNX,Index,quote,REGULAR,draft,Capture during regular session; regular and closed important
+^TNX,Index,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+^TNX,Index,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+^TNX,Index,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+^TNX,Index,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+^TNX,Index,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+^TNX,Index,chart,REGULAR,draft,Capture during regular session; regular and closed important
+BTC-USD,Crypto,quote,REGULAR,draft,Capture during regular session; weekend and closed-state comparison
+BTC-USD,Crypto,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+BTC-USD,Crypto,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+BTC-USD,Crypto,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+BTC-USD,Crypto,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+BTC-USD,Crypto,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+BTC-USD,Crypto,chart,REGULAR,draft,Capture during regular session; weekend and closed-state comparison
+BTC-USD,Crypto,spark,REGULAR,draft,Capture during regular session; weekend and closed-state comparison
+ETH-USD,Crypto,quote,REGULAR,draft,Capture during regular session; weekend and closed-state comparison
+ETH-USD,Crypto,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+ETH-USD,Crypto,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+ETH-USD,Crypto,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+ETH-USD,Crypto,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+ETH-USD,Crypto,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+ETH-USD,Crypto,chart,REGULAR,draft,Capture during regular session; weekend and closed-state comparison
+ETH-USD,Crypto,spark,REGULAR,draft,Capture during regular session; weekend and closed-state comparison
+EURUSD=X,Forex,quote,REGULAR,draft,Capture during regular session; multiple sessions
+EURUSD=X,Forex,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+EURUSD=X,Forex,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+EURUSD=X,Forex,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+EURUSD=X,Forex,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+EURUSD=X,Forex,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+EURUSD=X,Forex,chart,REGULAR,draft,Capture during regular session; multiple sessions
+GBPUSD=X,Forex,quote,REGULAR,draft,Capture during regular session; multiple sessions
+GBPUSD=X,Forex,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+GBPUSD=X,Forex,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+GBPUSD=X,Forex,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+GBPUSD=X,Forex,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+GBPUSD=X,Forex,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+GBPUSD=X,Forex,chart,REGULAR,draft,Capture during regular session; multiple sessions
+CL=F,Future,quote,REGULAR,draft,Capture during regular session; regular and closed important
+CL=F,Future,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+CL=F,Future,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+CL=F,Future,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+CL=F,Future,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+CL=F,Future,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+CL=F,Future,chart,REGULAR,draft,Capture during regular session; regular and closed important
+ZT=F,Future,quote,REGULAR,draft,Capture during regular session; regular and closed important
+ZT=F,Future,quote,PREPRE,queued,Market-state coverage; manual capture approx 3 minutes
+ZT=F,Future,quote,PRE,queued,Market-state coverage; manual capture approx 3 minutes
+ZT=F,Future,quote,POST,queued,Market-state coverage; manual capture approx 3 minutes
+ZT=F,Future,quote,POSTPOST,queued,Market-state coverage; manual capture approx 3 minutes
+ZT=F,Future,quote,CLOSED,queued,Market-state coverage; manual capture approx 3 minutes
+ZT=F,Future,chart,REGULAR,draft,Capture during regular session; regular and closed important
+AAPL,Equity,search,ANY,needs_retest,"Re-run q=AAPL with HTTP status, content-type, result_count, and result_state."
+Apple,Equity query fallback,search,ANY,queued,Fallback query for AAPL search; validate returned search_symbol=AAPL.
+most_actives,Predefined screener,screener,ANY,needs_retest,Screener is not AAPL-specific; re-run as endpoint health check with HTTP diagnostics.
+day_gainers,Predefined screener,screener,ANY,queued,Run one predefined screener ID at a time.
+day_losers,Predefined screener,screener,ANY,queued,Run one predefined screener ID at a time.
+ZT=F,Future,quoteSummary,ANY,reviewed,User-attached run returned successful futures quoteSummary; use for future-specific fields.
+NAC,Closed-End Fund,quoteSummary,POST,reviewed,User-attached run returned successful CEF quoteSummary with financialData/defaultKeyStatistics.
+XNACX,Mutual Fund,quoteSummary,POST,reviewed,User-attached run returned sparse fundProfile; preserve nulls.
+QQQI,ETF,quoteSummary,POST,reviewed,User-attached run returned fundProfile/summaryDetail/defaultKeyStatistics.
