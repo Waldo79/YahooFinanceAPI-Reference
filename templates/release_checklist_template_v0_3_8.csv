@@ -1,0 +1,8 @@
+check_id,release_check,required,status,notes
+RC038-001,README identifies v0.3.8 release purpose,Yes,Done,Public landing page explains observation review workflow.
+RC038-002,Review status categories included,Yes,Done,data/review_status_categories.csv
+RC038-003,Evidence quality levels included,Yes,Done,data/evidence_quality_levels.csv
+RC038-004,Classification rules included,Yes,Done,data/change_classification_rules.csv
+RC038-005,False-positive checks included,Yes,Done,data/false_positive_checks.csv
+RC038-006,Validation script passes,Yes,Done,scripts/validate_review_classification.py
+RC038-007,Master field database unchanged,Yes,Done,198 rows.

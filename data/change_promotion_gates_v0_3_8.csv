@@ -1,0 +1,8 @@
+gate_id,promotion_gate,required_before_confirming,failure_action,release_artifact
+PG001,Exact request recorded,Endpoint URL or symbol input is known and reproducible.,Set NEEDS_CLARIFICATION.,Observation issue only.
+PG002,Raw output or log retained,"Response body, structured output, or sufficiently complete log is available.",Set NEEDS_CLARIFICATION or NEEDS_RETEST.,Evidence attachment/reference.
+PG003,False-positive checks completed,"App/tool, encoding, rate limit, market timing, and endpoint expectation checks are considered.","Set LIKELY_APP_SPECIFIC, LIKELY_TEMPORARY_YAHOO_ISSUE, or REJECTED_FALSE_POSITIVE.",Review notes.
+PG004,Evidence level sufficient,Evidence meets the classification rule threshold.,Set NEEDS_RETEST or DEFERRED_MONITORING.,Evidence quality label.
+PG005,Affected scope identified,"Endpoint, security type, symbols, field paths, and market state scope are documented where applicable.",Keep UNDER_REVIEW.,Change record fields.
+PG006,Change record created,Confirmed change is captured in versioned project data.,Do not mark release complete.,change_records.csv or updated reference table.
+PG007,Release notes updated,README/CHANGELOG/MANIFEST reference the confirmed change or review-system update.,Hold release.,CHANGELOG.md and MANIFEST.csv.

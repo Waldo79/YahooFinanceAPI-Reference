@@ -1,0 +1,6 @@
+rule_id,duplicate_condition,matching_fields,default_action,notes
+DH001,"Same endpoint, same symbol, same field, same observed behavior within 7 days",endpoint_type; symbol; field_name; result_state,Close as duplicate or link reports,Keep stronger evidence as the canonical issue.
+DH002,Same full URL and same error message,request_url; error_code; error_description,Link to existing issue,Useful for rate-limit or endpoint-availability observations.
+DH003,Same missing requested symbol from same symbol batch,requested_symbols; returned_symbols; missing_requested_symbols,Merge into symbol anomaly issue,Preserve unique timestamps as additional evidence.
+DH004,Same marketState value observation,marketState; endpoint_type; security_type,Append evidence to enum observation,One confirmed enum record can have many evidence rows.
+DH005,Same app-specific behavior through same app workflow,app_or_tool; input_type; observed_behavior,Document once as app behavior finding,Do not convert repeated app behavior into Yahoo API change without raw endpoint evidence.

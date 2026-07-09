@@ -1,0 +1,8 @@
+step_id,retest_step,purpose,minimum_input,expected_output
+RT001,Record original observation details,Preserve exact context before retesting.,"Timestamp, endpoint or app feature, symbol(s), market state if known, raw output.",Original evidence record.
+RT002,Run a single-symbol control,Determine whether the issue is batch-specific or symbol-specific.,One common equity such as MSFT or SPY.,Success or failure with raw output.
+RT003,Run the reported symbol alone,Check whether the reported symbol is missing or failing by itself.,Reported symbol only.,"Returned symbol and field set, or precise failure state."
+RT004,Run the representative symbol batch,Compare affected symbol against multiple security types.,Representative symbols list from project data.,"requested_symbols, returned_symbols, missing_requested_symbols."
+RT005,Retest special-symbol encoding where applicable,Separate Yahoo behavior from URL/symbol encoding issues.,"Encoded and unencoded variants for symbols with ^, =, or - characters.",Encoding comparison note.
+RT006,Retest at a different time window,Separate persistent behavior from temporary rate limits or market-state timing.,Second capture at least one different time window later.,Repeatability status.
+RT007,Promote or close,Apply classification rules after evidence is gathered.,"Evidence level, false-positive checks, classification candidate.","Confirmed change, app behavior note, needs retest, duplicate, or rejected false positive."

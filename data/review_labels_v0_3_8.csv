@@ -1,0 +1,11 @@
+label_name,label_color_suggestion,applies_to,meaning
+status: new observation,#D0E7FF,issues,New report awaiting triage.
+status: needs clarification,#FFF3B0,issues,Reporter needs to provide more details.
+status: needs retest,#FFE0B2,issues,Observation requires repeat testing.
+status: under review,#DCC7FF,issues,Maintainer is evaluating evidence.
+status: confirmed change,#C8E6C9,issues/change records,Accepted as documented Yahoo API behavior/change.
+status: false positive,#FFCDD2,issues,Rejected as not a Yahoo API change.
+classification: field change,#B3E5FC,issues,Potential field addition/removal/type/path change.
+classification: symbol coverage,#C5CAE9,issues,Requested symbols missing or coverage changed.
+classification: endpoint availability,#F8BBD0,issues,Endpoint empty/null/error or availability behavior.
+classification: app-specific,#E0E0E0,issues,Likely caused by third-party app/tool behavior.

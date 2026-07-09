@@ -1,0 +1,3 @@
+observation_id,date_reported,report_source,endpoint_type,symbol_or_scope,classification_candidate,review_status,evidence_level,assigned_to,next_action,release_target
+OBS-EXAMPLE-001,2026-07-08,symbol lookup app run log,quote,AAPL in representative batch,SYMBOL_COVERAGE_CHANGE,NEEDS_RETEST,E2,maintainer/reporter,Retest AAPL alone and in representative batch; compare returned_symbols against requested_symbols.,Unassigned
+OBS-EXAMPLE-002,2026-07-08,symbol lookup app run log,search/chart/screener URLs entered into app,full URL input,APP_OR_TOOL_BEHAVIOR,LIKELY_APP_SPECIFIC,E2,maintainer,Document as app-compatibility note only; do not treat as raw Yahoo endpoint failure.,v0.3.8 note
