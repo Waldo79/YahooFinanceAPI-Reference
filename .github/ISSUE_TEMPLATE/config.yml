@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: YahooFinanceAPI-Reference project discussion
+    url: https://github.com/Waldo79/YahooFinanceAPI-Reference/issues
+    about: Use issues to report public Yahoo Finance API observations.
