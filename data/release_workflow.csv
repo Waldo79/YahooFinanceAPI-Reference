@@ -1,0 +1,10 @@
+step,phase,action,output,done_when,public_user_value
+1,Observe,"Collect symbol lookup results, endpoint response samples, or schema differences.",Raw observation record.,Original evidence is saved with date/time and source context.,Users can report what they actually saw without needing to code.
+2,Normalize,"Convert the observation into a consistent template with requested symbols, returned symbols, endpoint, and result state.",Reviewed observation row.,Required fields are populated or marked unknown.,Different reports can be compared side by side.
+3,Classify,"Apply result interpretation rules such as success, partial result, missing requested symbol, null result, or schema drift.",Classification field.,Reasoning is recorded in plain language.,"Users can tell whether an item is a Yahoo behavior, tool limitation, or unknown."
+4,Retest,Repeat the observation when practical using the same symbol set or endpoint.,Retest notes.,At least one retest or reason for no retest is documented.,Reduces false alarms from temporary rate limits or tool quirks.
+5,Confirm,Promote repeated or well-supported observations into confirmed records.,Confirmed observation/change record.,Evidence supports the classification.,Confirmed records can support release notes.
+6,Update reference data,"Update CSV tables and workbook sheets only when the change affects fields, schemas, symbols, states, or interpretation rules.",Updated CSV/workbook.,"Data remains sorted, validated, and versioned.",Reference files stay useful rather than becoming a discussion log.
+7,Document release,"Update README, CHANGELOG, MANIFEST, and release notes.",Release documentation.,Public users can understand what changed.,Users can upgrade without reading every file.
+8,Package,Create a normal commit-ready ZIP with repository folders intact.,ZIP release package.,ZIP opens with 7-Zip and includes manifest.,One package can be uploaded to GitHub or inspected locally.
+9,Publish,Commit to GitHub and optionally create a GitHub Release.,Tagged release.,"Release tag, title, and assets match version.",Public users can download a specific version.

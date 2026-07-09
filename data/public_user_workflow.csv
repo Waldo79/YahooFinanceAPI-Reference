@@ -1,0 +1,10 @@
+step,stage,actor,input,output,acceptance_check
+1,Choose test target,Public user / observer,"Endpoint, symbol, symbol set, or app lookup test",Planned test row,Test target has a clear symbol list or endpoint category.
+2,Capture output,Observer,"Yahoo URL result, app export, or visible output",Raw capture file or copied JSON/text,"Timestamp, input, and capture source are preserved."
+3,Classify result,Observer / curator,Raw output,"Result state such as SUCCESS, EMPTY_RESULT, NULL_RESULT, PARTIAL_SYMBOL_RESULT, or NOT_TESTABLE_THROUGH_APP_UI",Classification distinguishes Yahoo behavior from app-interface limits.
+4,Compare requested vs returned symbols,Observer / curator,Requested and returned symbol sets,Missing/extra symbol notes,Batch results explicitly list missing requested symbols.
+5,Record field/schema differences,Field curator,Raw JSON and existing field database,Candidate field changes,"Each candidate has endpoint, JSON path, type, and evidence status."
+6,Retest when needed,Observer,Anomaly or needs_retest item,Second observation,One-off anomalies are not promoted without retest when practical.
+7,Update reference tables,Field curator / release maintainer,Confirmed or evidence-labeled observations,CSV/workbook updates,IDs remain stable; new rows are append-only where possible.
+8,Validate release files,Release maintainer,CSV/workbook/docs,Validation result,Required files exist and core tables have required columns.
+9,Publish changelog,Release maintainer,Release changes and unresolved items,Release notes,Changelog separates confirmed changes from pending retests.

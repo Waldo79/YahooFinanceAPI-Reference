@@ -1,0 +1,10 @@
+item,rule,example,reason
+Release version,Use vMAJOR.MINOR.PATCH for the public reference package.,v0.3.5,Keeps package history readable.
+Draft label,Use '-draft' in README/workbook until the release is committed/tagged.,v0.3.5-draft,Distinguishes generated package from final GitHub tag.
+File suffix,Add the version suffix to release-specific files.,release_workflow_v0_3_5.csv,Prevents local overwrite confusion.
+Canonical current CSVs,"Inside the repo, stable filenames may omit versions when they represent the current source of truth.",data/master_field_database.csv,Makes public links stable.
+Archived release files,Versioned archive copies may keep explicit suffixes.,releases/v0.3.5/master_field_database_v0_3_5.csv,Supports historical comparison.
+Patch releases,"Use patch increments for documentation, templates, and workflow refinements.",v0.3.4 to v0.3.5,Matches the current stage of the project.
+Minor releases,Use minor increments for major reference expansion such as new endpoint families.,v0.4.0,Signals broader data-model coverage.
+Major release,Reserve v1.0.0 for a stable public workflow and durable core tables.,v1.0.0,Avoids implying maturity before public usage.
+Workbook version,Workbook version should match the release package version.,YahooFinanceAPI_Reference_Master_Field_Database_v0_3_5.xlsx,Prevents mismatches between CSV and workbook.

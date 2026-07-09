@@ -1,0 +1,14 @@
+path,status,purpose,primary_contents,owner_role,update_rule
+README.md,required,"Main public entry point explaining purpose, scope, and how to use the project.","Project summary, current release, quick-start links.",maintainer,Update every release.
+CHANGELOG.md,required,Chronological release notes for public users.,Added/changed/confirmed/retired items by version.,maintainer,Update every release.
+MANIFEST.csv,required,Machine-readable file inventory for each release package.,"file_path, category, version, description, checksum.",maintainer,Regenerate every release.
+data/,required,Canonical CSV reference tables used by the workbook and public users.,"Master fields, symbols, interpretation rules, workflows.",data maintainer,CSV is source-of-truth where practical.
+docs/,required,Human-readable explanations and project guidance.,"Charter, scope, release workflow, observation lifecycle.",documentation maintainer,Update when policies or workflows change.
+templates/,required,Reusable forms for non-programmer contributors.,"Run logs, change-record template, release checklist.",maintainer,Keep simple and stable.
+observations/raw/,optional,Unreviewed submitted captures or notes.,"User-submitted logs, screenshots, raw JSON excerpts.",contributor,Add without editing original evidence.
+observations/reviewed/,optional,Reviewed observations that have enough structure to compare.,Normalized observation CSV/MD records.,reviewer,Move here after basic completeness check.
+observations/confirmed/,optional,Repeated or independently confirmed observations.,Confirmed change records and supporting evidence.,maintainer,Use for release-level change records.
+scripts/,supporting,Optional helper scripts for validation and repeatability.,"Manifest/checksum validators, CSV validators.",technical contributor,Supporting tools only; not the product.
+tests/,supporting,Optional validation checks for release integrity.,Lightweight tests for CSV headers and required files.,technical contributor,Keep minimal and transparent.
+releases/,optional,Archived release snapshots if kept inside the repo.,Versioned copies or release notes.,maintainer,GitHub Releases may be primary archive instead.
+.github/ISSUE_TEMPLATE/,optional,GitHub forms for observations and symbol anomalies.,"Observation template, symbol anomaly template.",maintainer,Update as contributor workflow matures.

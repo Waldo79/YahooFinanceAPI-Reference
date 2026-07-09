@@ -1,0 +1,8 @@
+step,non_programmer_action,recommended_file,what_to_fill_in,what_not_to_do
+1,Download the latest release package.,README.md,Read project purpose and current release notes.,Do not start from an old package unless reporting a historical comparison.
+2,Choose the closest template.,templates/symbol_lookup_run_log_template.csv,"Date/time, symbol(s), result shown, missing symbols, notes.",Do not edit the master field database directly for a one-off observation.
+3,Preserve original evidence.,observations/raw/,Paste/export the raw result exactly where practical.,Do not rewrite the original result to make it look cleaner.
+4,Add plain-language notes.,templates/change_record_template.csv,"What you expected, what happened, and whether it repeated.",Do not claim Yahoo changed the API unless confirmed.
+5,Submit through GitHub issue or pull request.,.github/ISSUE_TEMPLATE/,Attach or paste the filled template.,"Do not include private account data, cookies, or credentials."
+6,Wait for review/confirmation.,observations/reviewed/,Reviewer may classify and request retest.,Do not treat reviewed as confirmed until marked confirmed.
+7,Help retest if asked.,same template,Use same symbol list and note date/time.,Do not change multiple variables at once if trying to confirm a change.

@@ -1,0 +1,7 @@
+phase,description,required_evidence,status_values
+Raw observation,"Original captured output from Yahoo, a URL, or a user-facing app export.","Timestamp, input string, capture source, raw response or exported text.","new, needs_cleanup"
+Interpreted finding,Human-readable description of what the capture appears to show.,Result classification and comparison to expected output.,"observed, needs_retest"
+Retest / confirmation,Repeat capture or cross-check with a control symbol or endpoint.,Second timestamped result or clear explanation why retest is not possible.,"confirmed, still_needs_retest, rejected"
+Change record,"Structured row describing the field, endpoint, enum, symbol, or behavior change.","Change type, affected object, evidence link/path, impact note.","candidate, accepted, deferred"
+Database / table update,Append or update reference tables while preserving stable IDs.,Updated CSV/workbook row and validation output.,"merged, held"
+Release note,Public summary of what changed and what is still uncertain.,Changelog entry and manifest.,"published, draft"

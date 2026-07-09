@@ -1,0 +1,10 @@
+folder,belongs_here,does_not_belong_here,examples,public_user_notes
+data/,Stable structured CSV tables.,Long prose explanations or raw unreviewed captures.,master_field_database.csv; representative_symbols.csv,Use this folder when you want the latest structured reference data.
+docs/,"Readable explanations, scope, workflow, and release guidance.",Canonical tabular data that should be sorted or filtered.,project_charter.md; release_workflow.md,Start here if you are learning how the project works.
+templates/,Blank or reusable contributor templates.,Completed observations or evidence.,symbol_lookup_run_log_template.csv,Copy these files before filling them in.
+observations/raw/,Original user-submitted evidence and logs.,Edited or normalized conclusions.,raw app export; pasted endpoint response sample,Raw files should be preserved as submitted when possible.
+observations/reviewed/,Cleaned observations with classification and reviewer notes.,Unreviewed dumps or confirmed release records.,reviewed_symbol_lookup_2026-07-08.csv,Reviewed does not necessarily mean confirmed.
+observations/confirmed/,"Observations confirmed by retest, cross-check, or maintainer review.",One-off unverified anomalies.,confirmed_aapl_missing_quote_batch.md,Confirmed records can support CHANGELOG entries.
+scripts/,Small optional utilities that support the reference project.,Required app code or proprietary integrations.,validate_manifest.py,Scripts should be understandable and optional.
+tests/,Release quality checks.,Complex application test suites.,test_required_files.py,"Tests check release package integrity, not app behavior."
+releases/,Versioned release snapshots when desired.,The only copy of current source data.,v0.3.5/,GitHub Releases are usually better for public downloads.

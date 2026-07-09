@@ -1,0 +1,11 @@
+charter_item,statement,guidance
+Project name,YahooFinanceAPI-Reference,Use this exact name for the public GitHub repository unless changed before first release.
+Primary purpose,Public Yahoo Finance API reference and change-tracking project.,"The repository documents observed behavior, fields, schemas, endpoint outputs, market states, and changes over time."
+Secondary purpose,"Provide supporting tools, templates, and validation scripts for repeatable public observation.",Scripts support documentation and evidence gathering; they are not the product itself.
+Not the primary purpose,Not primarily an app-development or app-debugging project.,"Third-party apps may be tested as black boxes, but the project is broader than any one app."
+Audience,"Public users, data collectors, researchers, spreadsheet users, analysts, and developers who need to understand Yahoo Finance output behavior.","Write documentation for non-developers first, with technical detail available in tables and appendices."
+Evidence model,"All claims should be tied to observed captures, timestamps, symbols, endpoints, and result classifications.",Prefer raw capture preservation plus summarized interpretation.
+Status model,"Use evidence statuses such as observed, confirmed, needs_retest, deprecated, and rejected.",Avoid treating one-off anomalies as permanent API facts until retested.
+Yahoo affiliation,This is not an official Yahoo or Yahoo Finance project.,"Do not imply endorsement, API guarantees, or official documentation status."
+App developer role,App developers may later participate as contributors or users of the public reference.,Their participation should strengthen the public reference without changing the project into an app-support repository.
+Release philosophy,"Small, evidence-labeled releases are preferred over large undocumented changes.","Each release should explain what changed, what was observed, and what still needs retesting."

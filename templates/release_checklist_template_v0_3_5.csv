@@ -1,0 +1,11 @@
+check_id,category,release_check,required,status,notes
+REL001,Versioning,"README, CHANGELOG, MANIFEST, workbook, and ZIP all use the same version.",yes,,
+REL002,Manifest,MANIFEST.csv lists every release file with category and description.,yes,,
+REL003,Data,master_field_database.csv exists and row count is recorded.,yes,,
+REL004,Workbook,Workbook opens and matches the release version.,yes,,
+REL005,Governance,Scope/non-scope remains aligned with public reference purpose.,yes,,
+REL006,Workflow,Observation lifecycle and release workflow files are present.,yes,,
+REL007,Templates,Public contributor templates are present and usable by non-programmers.,yes,,
+REL008,ZIP,Normal commit-ready ZIP preserves repository folders.,yes,,
+REL009,Validation,Release validation script passes or manual validation is documented.,recommended,,
+REL010,Privacy,"No cookies, tokens, private account IDs, or proprietary app internals are included.",yes,,

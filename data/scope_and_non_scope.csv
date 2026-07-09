@@ -1,0 +1,13 @@
+area,in_scope,details,boundary
+Endpoint observation,Yes,"Quote, Chart, Search, Screener, QuoteSummary, Options, and future observed endpoints.",Document observed behavior; do not claim official support unless cited from official sources.
+Field inventory,Yes,"Track field names, JSON paths, data types, applicability, validation rules, and CSV/database guidance.","Field existence may vary by symbol, security type, market state, and date."
+Schema drift tracking,Yes,"Record new, removed, renamed, moved, null-only, and type-changing fields.",Require capture evidence and a status field.
+Representative symbols,Yes,"Maintain stock, ETF, closed-end fund, mutual fund, futures, index, crypto, and forex test symbols.","Symbol set is representative, not exhaustive."
+Market-state tracking,Yes,Track observed marketState values and session-dependent field behavior.,Do not assume all values are complete until observed and retested.
+Black-box app behavior,Yes,Document what a public user can observe through an app UI or exported files.,Do not describe these as source-code fixes unless the developer confirms implementation details.
+Public test templates,Yes,"Provide CSV templates for run logs, result interpretation, and change records.",Templates should be easy for non-programmers to fill in.
+Validation scripts,"Yes, supporting only","Scripts may check table structure, IDs, required columns, and classification consistency.","Scripts are support tools, not the main purpose of the repository."
+Investment advice,No,"The project may contain prices, symbols, and fields, but does not recommend securities.",Keep documentation data-oriented.
+Bypassing access limits,No,"Do not provide methods to evade rate limits, anti-bot controls, authentication, or terms of service.",Document public observation and failures such as HTTP 429 without evasion instructions.
+Guaranteed real-time service,No,This project is not a data vendor or service-level agreement.,"Observed delays, nulls, and failures should be documented as observed behavior."
+Private or paid data scraping,No,"Do not include instructions to scrape authenticated, private, or paid content.",Keep public captures and user-provided app exports separate from restricted sources.
