@@ -1,0 +1,94 @@
+name: MarketState observation
+description: Report observed marketState values and timing across asset classes.
+title: "[MarketState observation] "
+labels:
+  - market-state
+  - observation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping track Yahoo Finance API behavior. Please include raw text/JSON when possible.
+  - type: input
+    id: observation_time
+    attributes:
+      label: Observation date/time
+      description: Include timezone if known.
+      placeholder: "2026-07-09 12:30 Pacific"
+    validations:
+      required: true
+  - type: dropdown
+    id: endpoint_or_feature
+    attributes:
+      label: Endpoint or feature tested
+      options:
+        - Quote
+        - Search
+        - Screener
+        - Chart
+        - QuoteSummary/Fundamentals
+        - Options
+        - Third-party app symbol lookup
+        - Other / unknown
+    validations:
+      required: true
+  - type: textarea
+    id: specific_details
+    attributes:
+      label: MarketState details
+      description: |
+        Include symbol, quoteType/security type, marketState, timestamp, exchange timezone, and endpoint.
+      placeholder: |
+        Symbol:
+        Security type:
+        Observed marketState:
+        Timestamp:
+        Exchange timezone:
+        Endpoint:
+    validations:
+      required: true
+  - type: dropdown
+    id: result_state
+    attributes:
+      label: Result state
+      description: Choose the closest project classification.
+      options:
+        - SUCCESS
+        - PARTIAL_SYMBOL_RESULT
+        - REQUESTED_SYMBOL_MISSING_FROM_RESULT
+        - EMPTY_RESULT
+        - NULL_RESULT
+        - HTTP_ERROR
+        - SCHEMA_DRIFT
+        - POSSIBLE_STALE_DATA
+        - APP_COMPATIBILITY_LIMITATION
+        - UNKNOWN
+    validations:
+      required: true
+  - type: textarea
+    id: raw_evidence
+    attributes:
+      label: Raw evidence
+      description: Paste a small raw JSON/error excerpt. Attach full files when available.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: expected_vs_observed
+    attributes:
+      label: Expected vs observed
+      description: What did you expect, and what actually happened?
+      placeholder: |
+        Expected:
+        Observed:
+    validations:
+      required: true
+  - type: checkboxes
+    id: reporter_confirmations
+    attributes:
+      label: Reporter confirmations
+      options:
+        - label: I understand this project documents observed behavior and is not an official Yahoo Finance service.
+          required: true
+        - label: I included raw text/JSON or enough detail for another user to reproduce the observation when possible.
+          required: false
