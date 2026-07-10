@@ -1,0 +1,25 @@
+{
+  "capture_schema_version": "0.3.9",
+  "run_id": "",
+  "utility_version": "",
+  "input_file": "",
+  "default_endpoint_id": "quote",
+  "pause_between_requests_ms": null,
+  "retry_policy": {
+    "maximum_attempts": null,
+    "backoff_seconds": []
+  },
+  "run_started_at_utc": "",
+  "run_completed_at_utc": "",
+  "symbols_requested": 0,
+  "summary": {
+    "success_result_returned": 0,
+    "success_empty_result": 0,
+    "requested_symbol_missing_from_result": 0,
+    "http_error": 0,
+    "parse_error": 0,
+    "rate_limit_or_throttle": 0,
+    "other": 0
+  },
+  "requests": []
+}

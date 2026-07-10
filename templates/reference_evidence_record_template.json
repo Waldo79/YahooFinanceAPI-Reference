@@ -1,0 +1,22 @@
+{
+  "record_schema_version": "0.3.9",
+  "observation_id": "",
+  "status": "new observation",
+  "endpoint_id": "",
+  "requested_symbol": "",
+  "returned_symbol": null,
+  "project_security_type": "",
+  "field_path": "",
+  "observed_raw_value": null,
+  "observed_raw_type": "",
+  "requested_at_utc": "",
+  "response_received_at_utc": "",
+  "http_status": null,
+  "result_classification": "",
+  "raw_evidence_file": "",
+  "metadata_file": "",
+  "evidence_sha256": "",
+  "direct_or_application": "",
+  "retest_required": true,
+  "notes": ""
+}
