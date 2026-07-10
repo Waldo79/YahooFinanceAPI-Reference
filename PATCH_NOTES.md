@@ -1,14 +1,12 @@
-# GitHub Repository Corrections Patch
+# Repository hygiene patch
 
-This patch fixes files that were accidentally uploaded with flattened line breaks or misplaced/empty placeholder folders.
+Upload the extracted contents to the `repository-hygiene-fixes` branch at the repository root.
 
-Upload the extracted contents to the repository root on the `main` branch. It should overwrite existing files in the same paths.
+This patch:
 
-Expected paths:
+- adds a root `.gitignore`;
+- disables blank GitHub issues;
+- removes the circular Issues contact link by replacing `config.yml`;
+- documents the purpose of `observations/confirmed/`.
 
-- `.github/ISSUE_TEMPLATE/*.yml`
-- `README.md`
-- `observations/raw/README.md`
-- `observations/reviewed/README.md`
-- `observations/confirmed/README.md`
-- `releases/README.md`
+After upload, manually delete any tracked files inside `__pycache__` folders and any `.pyc` or `.pyo` files.
