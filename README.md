@@ -2,11 +2,13 @@
 
 A public reference and change-tracking project for observed Yahoo Finance API behavior.
 
-## Current release: v0.3.8 — Observation Review and Change Classification
+## Current release
+
+v0.3.8 — Observation Review and Change Classification
 
 This project documents observed Yahoo Finance API endpoint behavior, field/schema changes, symbol coverage, market-state behavior, data timing, and data-quality anomalies over time.
 
-It is not an official Yahoo Finance project. It is also not primarily an application-development project. Scripts, templates, validators, and workbooks are support tools for repeatable public observation and documentation.
+This is not an official Yahoo Finance project. It is also not primarily an application-development project. Scripts, templates, validators, and workbooks are support tools for repeatable public observation and documentation.
 
 ## What this release adds
 
@@ -15,12 +17,7 @@ v0.3.8 adds a review layer so public reports are handled consistently before the
 A report now moves through a controlled workflow:
 
 ```text
-New observation
-→ Evidence review
-→ False-positive checks
-→ Retest if needed
-→ Classification
-→ Confirmed change record or rejected/duplicate/app-specific note
+New observation → Evidence review → False-positive checks → Retest if needed → Classification → Confirmed change record or rejected/duplicate/app-specific note
 ```
 
 ## Important principle
@@ -43,7 +40,9 @@ This protects the project from promoting temporary outages, app-specific behavio
 
 ## Public users
 
-You do not need to be a programmer to contribute. A useful report should include:
+You do not need to be a programmer to contribute.
+
+A useful report should include:
 
 - the symbol or endpoint tested,
 - date and time of the observation,
