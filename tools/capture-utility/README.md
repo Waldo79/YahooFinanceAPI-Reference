@@ -1,70 +1,94 @@
-# Yahoo Finance Capture Utility
+# Yahoo Finance Capture Utility — v0.4.0
 
-This utility captures raw Yahoo Finance JSON and saves it unchanged.
+This is the first working evidence-capture utility for the project. It implements the v0.3.9 capture-format specification for the Yahoo Finance **Quote** endpoint.
 
-It is intended to support:
+It uses only Python 3.10+ standard-library modules.
 
-- field discovery
-- `marketState` comparison
-- security-type comparison
-- JSON-to-CSV converter testing
-- golden test capture creation
+## What it does
 
-## Install
+For each enabled symbol, in table order, the utility:
 
-Requires Python 3.10+.
+1. sends one Quote request;
+2. records UTC request and response times and elapsed milliseconds;
+3. preserves the response body byte-for-byte;
+4. computes a SHA-256 digest;
+5. writes a metadata sidecar;
+6. classifies returned, empty, omitted-symbol, HTTP, rate-limit, network, and parse results;
+7. writes deterministic normalized text for valid JSON; and
+8. updates a run manifest.
 
-No third-party packages are required.
+The utility does not bypass authentication, throttling, rate limits, or other access controls.
 
-## Capture Quote Endpoint
+## Input table
 
-```bash
-python tools/capture-utility/yahoo_capture.py --endpoint quote
-```
+Edit `symbols.csv`. The supported columns are:
 
-This uses the default reference symbol set:
+| Column | Required | Meaning |
+|---|---|---|
+| `symbol` | Yes | Exact Yahoo symbol |
+| `enabled` | No | `yes/no`, `true/false`, `1/0`, or blank for enabled |
+| `project_security_type` | No | Project category such as Stock, ETF, or Index |
+| `endpoint_id` | No | Must be `quote` in v0.4.0 |
+| `notes` | No | User annotation copied into metadata |
 
-```text
-AAPL, MSFT, SPY, QQQI, NAC, PDI, XNACX, VTSAX, ZT=F, CL=F, ^GSPC, ^DJI, BTC-USD, ETH-USD, EURUSD=X, JPY=X
-```
+At most 30 rows may be enabled. Full URLs are rejected as symbols.
 
-## Capture Custom Symbols
+## Dry run
 
-```bash
-python tools/capture-utility/yahoo_capture.py --endpoint quote --symbols AAPL,MSFT,SPY
-```
-
-## Capture Chart Data
-
-```bash
-python tools/capture-utility/yahoo_capture.py --endpoint chart --range 1mo --interval 1d
-```
-
-## Capture Search Results
+Validate the table and display request order without contacting Yahoo:
 
 ```bash
-python tools/capture-utility/yahoo_capture.py --endpoint search --queries AAPL,PIMCO,Nasdaq
+python tools/capture-utility/yahoo_capture.py --dry-run
 ```
 
-## Capture Screener Results
+## Capture the table
 
 ```bash
-python tools/capture-utility/yahoo_capture.py --endpoint screener --screeners most_actives,day_gainers,day_losers
+python tools/capture-utility/yahoo_capture.py
 ```
+
+## Quick custom capture
+
+```bash
+python tools/capture-utility/yahoo_capture.py --symbols AAPL,MSFT,SPY
+```
+
+## Conservative request controls
+
+Defaults are one second between symbols, up to three attempts, retry delays of two and five seconds, and a 30-second timeout.
+
+```bash
+python tools/capture-utility/yahoo_capture.py \
+  --pause-ms 1500 \
+  --max-attempts 3 \
+  --backoff-seconds 3,8 \
+  --timeout 30
+```
+
+Retries are limited to network failures and HTTP 429, 500, 502, 503, and 504 responses.
 
 ## Output
 
-Files are saved under:
+Each run is written under `captures/local/`:
 
 ```text
-captures/local/<UTC timestamp>/<endpoint>/
+captures/local/
+  2026-07-11T20-00-00.000Z_run-0001/
+    run-manifest.json
+    raw/
+    metadata/
+    normalized/
+    errors/
 ```
 
-Each capture includes:
+Raw response files are never reformatted. Capture context is stored in the filename, sidecar, normalized output, and manifest.
 
-- raw endpoint JSON
-- metadata JSON containing URL, endpoint, timestamp, and symbols/query
+The command returns:
 
-## Important Parser Rule
+- exit code `0` when every requested symbol returned a matching result;
+- exit code `2` when the run completed but one or more results require review; and
+- exit code `1` for an operating-system failure. Invalid command input is reported by the command-line parser.
 
-Yahoo may reorder fields between captures. Always parse JSON by key name, not field position.
+## Current scope
+
+v0.4.0 captures the Quote endpoint only. Chart, QuoteSummary, Search, Screener, Options, and comparison utilities remain later stages.

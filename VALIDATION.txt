@@ -1,0 +1,14 @@
+YahooFinanceAPI-Reference v0.4.0 validation
+Date: 2026-07-11
+
+Commands completed:
+- pytest -q
+- python -m py_compile tools/capture-utility/yahoo_capture.py
+- python tools/capture-utility/yahoo_capture.py --dry-run
+
+Results:
+- 5 tests passed
+- Python compilation passed
+- Default 16-symbol table passed dry-run validation
+
+No live Yahoo request was made from the validation environment.

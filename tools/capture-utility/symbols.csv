@@ -1,0 +1,17 @@
+symbol,enabled,project_security_type,endpoint_id,notes
+AAPL,yes,Stock,quote,Representative stock
+MSFT,yes,Stock,quote,Representative stock
+SPY,yes,ETF,quote,Representative ETF
+QQQI,yes,ETF,quote,Representative ETF
+NAC,yes,Closed-end fund,quote,Representative California municipal CEF
+PDI,yes,Closed-end fund,quote,Representative taxable CEF
+XNACX,yes,Mutual fund,quote,Representative mutual fund
+VTSAX,yes,Mutual fund,quote,Representative mutual fund
+ZT=F,yes,Futures,quote,Representative Treasury futures contract
+CL=F,yes,Futures,quote,Representative crude-oil futures contract
+^GSPC,yes,Index,quote,Representative broad-market index
+^DJI,yes,Index,quote,Representative price-weighted index
+BTC-USD,yes,Cryptocurrency,quote,Representative cryptocurrency pair
+ETH-USD,yes,Cryptocurrency,quote,Representative cryptocurrency pair
+EURUSD=X,yes,Foreign exchange,quote,Representative foreign-exchange pair
+JPY=X,yes,Foreign exchange,quote,Representative foreign-exchange pair

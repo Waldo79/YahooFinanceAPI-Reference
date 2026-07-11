@@ -4,7 +4,7 @@ A public reference and change-tracking project for observed Yahoo Finance API be
 
 ## Current release
 
-v0.3.9 — Reference Pages and Capture Format Specification
+v0.4.0 — First Working Capture Utility
 
 This project documents observed Yahoo Finance API endpoint behavior, field/schema changes, symbol coverage, market-state behavior, data timing, and data-quality anomalies over time.
 
@@ -12,28 +12,50 @@ This is not an official Yahoo Finance project. It is also not primarily an appli
 
 ## What this release adds
 
-v0.3.9 adds human-readable reference pages and formal capture and normalization specifications for repeatable Yahoo Finance API observations.
+v0.4.0 turns the v0.3.9 capture specification into the first executable evidence-capture workflow.
 
-The release defines:
+The utility now provides:
 
-- reference pages for market states, security types, endpoints, timestamps, symbol formats, and data-delay behavior;
-- sequential capture of up to 30 table-selected symbols, using one request per symbol in the first implementation;
-- unchanged raw JSON with UTC metadata sidecars and SHA-256 integrity;
-- deterministic normalized output with full JSON paths; and
-- separate classifications for missing fields, explicit nulls, empty results, and requested symbols omitted from results.
+- a user-editable CSV table with the 16 representative symbols;
+- sequential one-symbol Quote requests, with a project maximum of 30 enabled rows;
+- byte-for-byte preservation of every received response body;
+- UTC request/response timestamps, elapsed time, HTTP status, content type, and response size;
+- SHA-256 integrity values and per-request metadata sidecars;
+- explicit classifications for returned, empty, omitted-symbol, HTTP, rate-limit, network, and parse outcomes;
+- deterministic normalized text ordered by the master field database; and
+- a run manifest updated after every attempted symbol.
 
 ```text
-Reference definitions → Structured capture → Raw evidence preservation → Normalized output → Review and confirmation
+Symbol table → Sequential Quote requests → Raw evidence + SHA-256 → Metadata + normalized text → Run manifest → Review
 ```
 
 ## Important principles
 
-Raw Yahoo responses should remain unchanged and valid. Capture context belongs in filenames, metadata sidecars, and normalized output rather than being inserted into the raw JSON.
+Raw Yahoo responses remain unchanged. Capture context belongs in filenames, metadata sidecars, normalized output, and the run manifest rather than being inserted into raw JSON.
 
 A user report should still start as an observation, not immediately as a confirmed Yahoo Finance API change.
 
+## Run the capture utility
+
+Validate the default table without contacting Yahoo:
+
+```bash
+python tools/capture-utility/yahoo_capture.py --dry-run
+```
+
+Run a capture:
+
+```bash
+python tools/capture-utility/yahoo_capture.py
+```
+
+See `tools/capture-utility/README.md` for the complete command reference and output layout.
+
 ## Main files
 
+- `tools/capture-utility/yahoo_capture.py` — first working Quote evidence-capture utility
+- `tools/capture-utility/symbols.csv` — user-editable representative-symbol table
+- `tests/test_capture_utility.py` — offline tests using simulated HTTP responses
 - `data/master_field_database.csv` — observed Yahoo API field database
 - `data/review_status_categories.csv` — review status definitions
 - `data/evidence_quality_levels.csv` — evidence quality scale
@@ -47,6 +69,10 @@ A user report should still start as an observation, not immediately as a confirm
 - `templates/reference_evidence_record_template.json` — observation evidence template
 - `.github/ISSUE_TEMPLATE/` — public report forms
 - `docs/` — project guidance and release notes
+
+## Current utility scope
+
+v0.4.0 implements the Quote endpoint first. Chart, QuoteSummary, Search, Screener, Options, comparison, scheduled capture, and workbook export remain later stages.
 
 ## Public users
 
