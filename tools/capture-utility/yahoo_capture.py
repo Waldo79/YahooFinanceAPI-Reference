@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Yahoo Finance evidence capture utility.
 
-v0.4.1 implements the v0.3.9 capture-format specification for the Quote
-endpoint and adds anonymous Yahoo cookie-and-crumb session handling. It uses
-only the Python standard library.
+v0.4.2 implements the v0.3.9 capture-format specification for the Quote
+endpoint, anonymous Yahoo cookie-and-crumb session handling, portable output
+paths, and validation of completed capture runs. It uses only the Python
+standard library.
 
 The utility:
 - reads up to 30 enabled symbols from a CSV table (or --symbols),
@@ -12,8 +13,9 @@ The utility:
 - refreshes the anonymous session once after HTTP 401 or 403,
 - preserves each final HTTP response body byte-for-byte,
 - writes a metadata sidecar and SHA-256 digest,
-- writes deterministic normalized text for valid JSON responses, and
-- writes a run manifest covering every attempted request.
+- writes deterministic normalized text for valid JSON responses,
+- writes a run manifest covering every attempted request, and
+- validates run structure, hashes, privacy, and mapped/unmapped JSON paths.
 
 Yahoo Finance endpoints are unofficial and may change without notice.
 """
@@ -37,8 +39,9 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from urllib.request import HTTPCookieProcessor, Request, build_opener, urlopen
 
-UTILITY_VERSION = "0.4.1"
+UTILITY_VERSION = "0.4.2"
 CAPTURE_SCHEMA_VERSION = "0.3.9"
+VALIDATION_SCHEMA_VERSION = "0.4.2"
 DEFAULT_ENDPOINT_ID = "quote"
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -50,8 +53,12 @@ YAHOO_BASIC_COOKIE_URL = "https://fc.yahoo.com"
 YAHOO_BASIC_CRUMB_URL = "https://query1.finance.yahoo.com/v1/test/getcrumb"
 YAHOO_FALLBACK_COOKIE_URL = "https://finance.yahoo.com/quote/AAPL"
 YAHOO_FALLBACK_CRUMB_URL = "https://query2.finance.yahoo.com/v1/test/getcrumb"
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SYMBOLS_FILE = Path(__file__).with_name("symbols.csv")
-DEFAULT_MASTER_FIELDS = Path(__file__).resolve().parents[2] / "data" / "master_field_database.csv"
+DEFAULT_MASTER_FIELDS = REPOSITORY_ROOT / "data" / "master_field_database.csv"
+DEFAULT_OUTDIR = REPOSITORY_ROOT / "captures" / "local"
+VALIDATION_JSON_FILENAME = "run-validation.json"
+VALIDATION_TEXT_FILENAME = "run-validation.txt"
 MAX_SYMBOLS = 30
 RETRYABLE_HTTP_STATUSES = {429, 500, 502, 503, 504}
 AUTH_REFRESH_HTTP_STATUSES = {401, 403}
@@ -61,6 +68,15 @@ SENSITIVE_QUERY_KEYS = {"crumb", "token", "authorization", "auth", "cookie", "se
 ARRAY_INDEX_RE = re.compile(r"\[\d+\]")
 SAFE_FILENAME_RE = re.compile(r"[^A-Za-z0-9._-]+")
 TIMESTAMP_FIELD_RE = re.compile(r"(?:time|timestamp|datemilliseconds)$", re.IGNORECASE)
+WINDOWS_ABSOLUTE_PATH_RE = re.compile(r"^[A-Za-z]:[\\/]")
+UNREDACTED_CRUMB_RE = re.compile(
+    r"(?i)(?:[?&]|\b)crumb=(?!REDACTED(?:[&\s\"']|$))[^&\s\"']+"
+)
+SENSITIVE_HEADER_RE = re.compile(r"(?im)^(?:set-cookie|cookie|authorization)\s*:\s*\S+")
+SENSITIVE_JSON_VALUE_RE = re.compile(
+    r'(?i)"(?:crumb|cookie|authorization)"\s*:\s*"(?!REDACTED(?:"|$)|NONE(?:"|$))[^"\r\n]+"'
+)
+LOCAL_ABSOLUTE_PATH_RE = re.compile(r'(?i)(?:[A-Za-z]:\\Users\\|/Users/|/home/)[^\r\n"]+')
 
 
 class CaptureInputError(ValueError):
@@ -308,6 +324,50 @@ def format_utc(value: datetime) -> str:
 
 def filename_utc(value: datetime) -> str:
     return format_utc(value).replace(":", "-")
+
+
+
+def _resolve_path(path: Path) -> Path:
+    try:
+        return path.expanduser().resolve()
+    except OSError:
+        return path.expanduser().absolute()
+
+
+def portable_path_reference(value: str | Path, repository_root: Path = REPOSITORY_ROOT) -> tuple[str, str]:
+    """Return a privacy-safe path reference and its scope.
+
+    Repository paths are stored relative to the repository root. External paths
+    are reduced to their filename so local usernames and directory layouts are
+    not written into public evidence.
+    """
+    if isinstance(value, str) and value.startswith("--"):
+        return value, "command-line"
+    path = _resolve_path(Path(value))
+    root = _resolve_path(repository_root)
+    try:
+        return path.relative_to(root).as_posix(), "repository"
+    except ValueError:
+        return path.name, "external"
+
+
+def is_absolute_path_text(value: Any) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    return bool(WINDOWS_ABSOLUTE_PATH_RE.match(value) or value.startswith("/"))
+
+
+def safe_run_path(run_dir: Path, relative_value: Any) -> Path | None:
+    """Resolve a manifest path only when it remains inside the run directory."""
+    if not isinstance(relative_value, str) or not relative_value.strip():
+        return None
+    candidate = _resolve_path(run_dir / relative_value)
+    root = _resolve_path(run_dir)
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        return None
+    return candidate
 
 
 def parse_enabled(value: str | None, *, row_number: int) -> bool:
@@ -973,6 +1033,8 @@ def run_capture(
     sleep: Callable[[float], None] = time.sleep,
     clock: Callable[[], float] = time.perf_counter,
     now: Callable[[], datetime] = utc_now,
+    repository_root: Path = REPOSITORY_ROOT,
+    progress: Callable[[str], None] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     if not symbol_requests:
         raise CaptureInputError("No symbol requests were supplied.")
@@ -1002,12 +1064,16 @@ def run_capture(
         (run_dir / name).mkdir(parents=True, exist_ok=True)
 
     master_fields = load_master_fields(master_field_path)
+    input_reference, input_scope = portable_path_reference(input_file, repository_root)
+    master_reference, master_scope = portable_path_reference(master_field_path, repository_root)
     manifest: dict[str, Any] = {
         "capture_schema_version": CAPTURE_SCHEMA_VERSION,
         "run_id": run_id,
         "utility_version": UTILITY_VERSION,
-        "input_file": input_file,
-        "master_field_database": str(master_field_path),
+        "input_file": input_reference,
+        "input_file_scope": input_scope,
+        "master_field_database": master_reference,
+        "master_field_database_scope": master_scope,
         "default_endpoint_id": DEFAULT_ENDPOINT_ID,
         "pause_between_requests_ms": pause_between_requests_ms,
         "timeout_seconds": timeout_seconds,
@@ -1046,6 +1112,12 @@ def run_capture(
         increment_summary(manifest["summary"], metadata["result_classification"])
         manifest["authentication"] = request_session.public_summary()
         write_json(manifest_path, manifest)
+        if progress is not None:
+            http_display = metadata["http_status"] if metadata["http_status"] is not None else "-"
+            progress(
+                f"[{sequence:02d}/{len(symbol_requests):02d}] {item.symbol} ... "
+                f"HTTP {http_display} {metadata['result_classification']}"
+            )
         if sequence < len(symbol_requests) and pause_between_requests_ms:
             sleep(pause_between_requests_ms / 1000.0)
 
@@ -1054,9 +1126,584 @@ def run_capture(
     return run_dir, manifest
 
 
+
+def _new_validation_report(run_dir: Path) -> dict[str, Any]:
+    return {
+        "validation_schema_version": VALIDATION_SCHEMA_VERSION,
+        "validator_utility_version": UTILITY_VERSION,
+        "run_folder": run_dir.name,
+        "run_id": None,
+        "validated_at_utc": format_utc(utc_now()),
+        "status": "FAIL",
+        "counts": {
+            "errors": 0,
+            "warnings": 0,
+            "information": 0,
+            "manifest_requests": 0,
+            "raw_files_checked": 0,
+            "metadata_files_checked": 0,
+            "normalized_files_checked": 0,
+            "error_files_checked": 0,
+            "known_json_paths_observed": 0,
+            "unmapped_json_paths_observed": 0,
+        },
+        "issues": [],
+        "known_json_paths": [],
+        "unmapped_json_paths": [],
+    }
+
+
+def _add_validation_issue(
+    report: dict[str, Any],
+    severity: str,
+    code: str,
+    message: str,
+    *,
+    file: str | None = None,
+    sequence: int | None = None,
+) -> None:
+    normalized = severity.lower()
+    if normalized not in {"error", "warning", "information"}:
+        raise ValueError(f"Unsupported validation severity: {severity}")
+    issue: dict[str, Any] = {"severity": normalized, "code": code, "message": message}
+    if file is not None:
+        issue["file"] = file
+    if sequence is not None:
+        issue["sequence"] = sequence
+    report["issues"].append(issue)
+    report["counts"][f"{normalized}s" if normalized != "information" else "information"] += 1
+
+
+def _read_json_for_validation(
+    path: Path,
+    report: dict[str, Any],
+    *,
+    code: str,
+    display_file: str,
+) -> Any | None:
+    try:
+        return json.loads(path.read_bytes())
+    except OSError as exc:
+        _add_validation_issue(
+            report,
+            "error",
+            code,
+            f"Could not read JSON file: {type(exc).__name__}: {exc}",
+            file=display_file,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        _add_validation_issue(
+            report,
+            "error",
+            code,
+            f"Invalid JSON: {type(exc).__name__}: {exc}",
+            file=display_file,
+        )
+    return None
+
+
+def _scan_privacy_file(path: Path, display_file: str, report: dict[str, Any]) -> None:
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        _add_validation_issue(
+            report,
+            "error",
+            "PRIVACY_SCAN_READ_ERROR",
+            f"Could not read file for privacy scanning: {type(exc).__name__}: {exc}",
+            file=display_file,
+        )
+        return
+    if UNREDACTED_CRUMB_RE.search(text):
+        _add_validation_issue(
+            report,
+            "error",
+            "UNREDACTED_CRUMB",
+            "Potential unredacted Yahoo crumb was detected.",
+            file=display_file,
+        )
+    if SENSITIVE_HEADER_RE.search(text):
+        _add_validation_issue(
+            report,
+            "error",
+            "SENSITIVE_HEADER_VALUE",
+            "Potential Cookie, Set-Cookie, or Authorization header value was detected.",
+            file=display_file,
+        )
+    if SENSITIVE_JSON_VALUE_RE.search(text):
+        _add_validation_issue(
+            report,
+            "error",
+            "SENSITIVE_JSON_VALUE",
+            "Potential cookie, crumb, or authorization value was detected in JSON.",
+            file=display_file,
+        )
+    if LOCAL_ABSOLUTE_PATH_RE.search(text):
+        _add_validation_issue(
+            report,
+            "warning",
+            "LOCAL_ABSOLUTE_PATH",
+            "A local user-directory path was found; v0.4.2 stores portable path references instead.",
+            file=display_file,
+        )
+
+
+def _write_validation_text(path: Path, report: Mapping[str, Any]) -> None:
+    counts = report["counts"]
+    lines = [
+        f"Run validation: {report['status']}",
+        f"Run folder: {report['run_folder']}",
+        f"Run ID: {report.get('run_id') or ''}",
+        f"Validated UTC: {report['validated_at_utc']}",
+        "",
+        f"Errors: {counts['errors']}",
+        f"Warnings: {counts['warnings']}",
+        f"Information: {counts['information']}",
+        f"Manifest requests: {counts['manifest_requests']}",
+        f"Raw files checked: {counts['raw_files_checked']}",
+        f"Metadata files checked: {counts['metadata_files_checked']}",
+        f"Normalized files checked: {counts['normalized_files_checked']}",
+        f"Error files checked: {counts['error_files_checked']}",
+        f"Known JSON paths observed: {counts['known_json_paths_observed']}",
+        f"Unmapped JSON paths observed: {counts['unmapped_json_paths_observed']}",
+        "",
+        "Issues:",
+    ]
+    if report["issues"]:
+        for issue in report["issues"]:
+            location = issue.get("file", "")
+            sequence = issue.get("sequence")
+            context = ""
+            if sequence is not None:
+                context += f" sequence={sequence}"
+            if location:
+                context += f" file={location}"
+            lines.append(
+                f"- {issue['severity'].upper()} {issue['code']}:{context} {issue['message']}"
+            )
+    else:
+        lines.append("- None")
+    lines.extend(["", "Unmapped JSON paths:"])
+    if report["unmapped_json_paths"]:
+        lines.extend(f"- {item}" for item in report["unmapped_json_paths"])
+    else:
+        lines.append("- None")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+
+
+def validate_run(
+    run_dir: Path,
+    *,
+    master_field_path: Path = DEFAULT_MASTER_FIELDS,
+    write_reports: bool = True,
+) -> dict[str, Any]:
+    """Validate a completed capture run without modifying its evidence files."""
+    run_dir = _resolve_path(run_dir)
+    report = _new_validation_report(run_dir)
+    if not run_dir.is_dir():
+        _add_validation_issue(report, "error", "RUN_FOLDER_MISSING", "Run folder does not exist.")
+        return report
+
+    manifest_path = run_dir / "run-manifest.json"
+    if not manifest_path.is_file():
+        _add_validation_issue(
+            report,
+            "error",
+            "MANIFEST_MISSING",
+            "run-manifest.json is missing.",
+            file="run-manifest.json",
+        )
+        if write_reports:
+            write_json(run_dir / VALIDATION_JSON_FILENAME, report)
+            _write_validation_text(run_dir / VALIDATION_TEXT_FILENAME, report)
+        return report
+
+    manifest = _read_json_for_validation(
+        manifest_path,
+        report,
+        code="MANIFEST_INVALID_JSON",
+        display_file="run-manifest.json",
+    )
+    if not isinstance(manifest, dict):
+        if manifest is not None:
+            _add_validation_issue(
+                report,
+                "error",
+                "MANIFEST_NOT_OBJECT",
+                "The run manifest must be a JSON object.",
+                file="run-manifest.json",
+            )
+        if write_reports:
+            write_json(run_dir / VALIDATION_JSON_FILENAME, report)
+            _write_validation_text(run_dir / VALIDATION_TEXT_FILENAME, report)
+        return report
+
+    report["run_id"] = manifest.get("run_id")
+    if manifest.get("run_id") != run_dir.name:
+        _add_validation_issue(
+            report,
+            "error",
+            "RUN_ID_FOLDER_MISMATCH",
+            "Manifest run_id does not match the run-folder name.",
+            file="run-manifest.json",
+        )
+    if not manifest.get("run_completed_at_utc"):
+        _add_validation_issue(
+            report,
+            "warning",
+            "RUN_NOT_MARKED_COMPLETE",
+            "The manifest does not contain run_completed_at_utc.",
+            file="run-manifest.json",
+        )
+
+    for field_name in ("input_file", "master_field_database"):
+        if is_absolute_path_text(manifest.get(field_name)):
+            _add_validation_issue(
+                report,
+                "warning",
+                "NONPORTABLE_MANIFEST_PATH",
+                f"Manifest field {field_name!r} contains an absolute local path.",
+                file="run-manifest.json",
+            )
+
+    requests = manifest.get("requests")
+    if not isinstance(requests, list):
+        _add_validation_issue(
+            report,
+            "error",
+            "REQUESTS_NOT_ARRAY",
+            "Manifest requests must be an array.",
+            file="run-manifest.json",
+        )
+        requests = []
+    report["counts"]["manifest_requests"] = len(requests)
+
+    declared_count = manifest.get("symbols_requested")
+    if declared_count != len(requests):
+        _add_validation_issue(
+            report,
+            "error",
+            "REQUEST_COUNT_MISMATCH",
+            "symbols_requested does not equal the number of manifest request entries.",
+            file="run-manifest.json",
+        )
+
+    request_order = manifest.get("request_order")
+    if not isinstance(request_order, list):
+        _add_validation_issue(
+            report,
+            "error",
+            "REQUEST_ORDER_NOT_ARRAY",
+            "request_order must be an array.",
+            file="run-manifest.json",
+        )
+        request_order = []
+
+    master_fields = load_master_fields(master_field_path)
+    known_paths_observed: set[str] = set()
+    unmapped_paths_observed: set[str] = set()
+    classifications: dict[str, int] = {}
+    expected_files: dict[str, set[str]] = {
+        "raw": set(),
+        "metadata": set(),
+        "normalized": set(),
+        "errors": set(),
+    }
+    referenced_files: set[str] = set()
+    seen_sequences: set[int] = set()
+
+    for index, request_meta in enumerate(requests, start=1):
+        if not isinstance(request_meta, dict):
+            _add_validation_issue(
+                report,
+                "error",
+                "REQUEST_ENTRY_NOT_OBJECT",
+                "A manifest request entry is not a JSON object.",
+                sequence=index,
+            )
+            continue
+        sequence = request_meta.get("sequence")
+        if not isinstance(sequence, int):
+            _add_validation_issue(
+                report,
+                "error",
+                "SEQUENCE_NOT_INTEGER",
+                "Request sequence must be an integer.",
+                sequence=index,
+            )
+            sequence = index
+        if sequence in seen_sequences:
+            _add_validation_issue(
+                report,
+                "error",
+                "DUPLICATE_SEQUENCE",
+                "Duplicate request sequence was found.",
+                sequence=sequence,
+            )
+        seen_sequences.add(sequence)
+        if sequence != index:
+            _add_validation_issue(
+                report,
+                "error",
+                "SEQUENCE_ORDER_MISMATCH",
+                "Request sequence does not match manifest array order.",
+                sequence=sequence,
+            )
+
+        requested_symbol = request_meta.get("requested_symbol")
+        if index <= len(request_order) and request_order[index - 1] != requested_symbol:
+            _add_validation_issue(
+                report,
+                "error",
+                "REQUEST_ORDER_SYMBOL_MISMATCH",
+                "request_order does not match the request entry symbol.",
+                sequence=sequence,
+            )
+
+        classification = request_meta.get("result_classification")
+        if isinstance(classification, str):
+            classifications[classification.lower()] = classifications.get(classification.lower(), 0) + 1
+
+        file_fields = (
+            ("metadata_file", "metadata"),
+            ("raw_response_file", "raw"),
+            ("normalized_output_file", "normalized"),
+            ("error_file", "errors"),
+        )
+        resolved_files: dict[str, Path] = {}
+        for field_name, folder_name in file_fields:
+            relative_value = request_meta.get(field_name)
+            if not relative_value:
+                continue
+            if not isinstance(relative_value, str):
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "FILE_REFERENCE_NOT_STRING",
+                    f"{field_name} must be a string or null.",
+                    sequence=sequence,
+                )
+                continue
+            if relative_value in referenced_files:
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "DUPLICATE_FILE_REFERENCE",
+                    "The same file is referenced by more than one manifest field or request.",
+                    file=relative_value,
+                    sequence=sequence,
+                )
+            referenced_files.add(relative_value)
+            expected_files[folder_name].add(relative_value)
+            resolved = safe_run_path(run_dir, relative_value)
+            if resolved is None:
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "UNSAFE_FILE_REFERENCE",
+                    "Manifest file reference escapes the run directory or is invalid.",
+                    file=relative_value,
+                    sequence=sequence,
+                )
+                continue
+            resolved_files[field_name] = resolved
+            if not resolved.is_file():
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "REFERENCED_FILE_MISSING",
+                    "A file referenced by the manifest is missing.",
+                    file=relative_value,
+                    sequence=sequence,
+                )
+                continue
+            if not resolved.name.startswith(f"{sequence:04d}_"):
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "FILENAME_SEQUENCE_MISMATCH",
+                    "Referenced filename does not begin with the four-digit request sequence.",
+                    file=relative_value,
+                    sequence=sequence,
+                )
+
+        metadata_path = resolved_files.get("metadata_file")
+        if metadata_path and metadata_path.is_file():
+            report["counts"]["metadata_files_checked"] += 1
+            metadata_rel = request_meta.get("metadata_file")
+            metadata = _read_json_for_validation(
+                metadata_path,
+                report,
+                code="METADATA_INVALID_JSON",
+                display_file=str(metadata_rel),
+            )
+            if isinstance(metadata, dict) and metadata != request_meta:
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "METADATA_MANIFEST_MISMATCH",
+                    "Metadata sidecar does not exactly match its manifest request entry.",
+                    file=str(metadata_rel),
+                    sequence=sequence,
+                )
+
+        raw_path = resolved_files.get("raw_response_file")
+        if raw_path and raw_path.is_file():
+            report["counts"]["raw_files_checked"] += 1
+            raw_rel = str(request_meta.get("raw_response_file"))
+            try:
+                raw_bytes = raw_path.read_bytes()
+            except OSError as exc:
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "RAW_READ_ERROR",
+                    f"Could not read raw response: {type(exc).__name__}: {exc}",
+                    file=raw_rel,
+                    sequence=sequence,
+                )
+                raw_bytes = b""
+            expected_hash = request_meta.get("raw_response_sha256")
+            actual_hash = hashlib.sha256(raw_bytes).hexdigest()
+            if expected_hash != actual_hash:
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "RAW_SHA256_MISMATCH",
+                    "Raw response SHA-256 does not match the manifest.",
+                    file=raw_rel,
+                    sequence=sequence,
+                )
+            if request_meta.get("response_bytes") != len(raw_bytes):
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "RAW_SIZE_MISMATCH",
+                    "Raw response byte count does not match the manifest.",
+                    file=raw_rel,
+                    sequence=sequence,
+                )
+            if raw_path.suffix.lower() == ".json" or "json" in str(request_meta.get("content_type", "")).lower():
+                try:
+                    parsed_raw = json.loads(raw_bytes)
+                except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    _add_validation_issue(
+                        report,
+                        "error",
+                        "RAW_INVALID_JSON",
+                        f"Raw response expected to be JSON but could not be parsed: {type(exc).__name__}: {exc}",
+                        file=raw_rel,
+                        sequence=sequence,
+                    )
+                else:
+                    for field in flatten_json(parsed_raw):
+                        normalized_path = normalize_array_path(field.json_path)
+                        if normalized_path in master_fields:
+                            known_paths_observed.add(normalized_path)
+                        else:
+                            unmapped_paths_observed.add(normalized_path)
+
+        normalized_path = resolved_files.get("normalized_output_file")
+        if normalized_path and normalized_path.is_file():
+            report["counts"]["normalized_files_checked"] += 1
+        error_path = resolved_files.get("error_file")
+        if error_path and error_path.is_file():
+            report["counts"]["error_files_checked"] += 1
+
+    expected_sequences = set(range(1, len(requests) + 1))
+    if seen_sequences != expected_sequences:
+        _add_validation_issue(
+            report,
+            "error",
+            "SEQUENCE_SET_MISMATCH",
+            "Request sequences are not exactly 1 through the manifest request count.",
+            file="run-manifest.json",
+        )
+
+    declared_summary = manifest.get("summary")
+    if not isinstance(declared_summary, dict):
+        _add_validation_issue(
+            report,
+            "error",
+            "SUMMARY_NOT_OBJECT",
+            "Manifest summary must be a JSON object.",
+            file="run-manifest.json",
+        )
+    else:
+        for key in summary_template():
+            actual = classifications.get(key, 0)
+            if declared_summary.get(key) != actual:
+                _add_validation_issue(
+                    report,
+                    "error",
+                    "SUMMARY_CLASSIFICATION_MISMATCH",
+                    f"Summary count for {key!r} does not match request classifications.",
+                    file="run-manifest.json",
+                )
+
+    for folder_name, expected in expected_files.items():
+        folder = run_dir / folder_name
+        if not folder.is_dir():
+            _add_validation_issue(
+                report,
+                "error",
+                "RUN_SUBFOLDER_MISSING",
+                f"Required run subfolder {folder_name!r} is missing.",
+                file=folder_name,
+            )
+            continue
+        actual = {
+            item.relative_to(run_dir).as_posix()
+            for item in folder.rglob("*")
+            if item.is_file()
+        }
+        for extra in sorted(actual - expected):
+            _add_validation_issue(
+                report,
+                "error",
+                "UNREFERENCED_EXTRA_FILE",
+                "File exists in a run subfolder but is not referenced by the manifest.",
+                file=extra,
+            )
+
+    scan_files = [manifest_path]
+    for folder_name in ("metadata", "normalized", "errors", "raw"):
+        folder = run_dir / folder_name
+        if folder.is_dir():
+            scan_files.extend(item for item in folder.rglob("*") if item.is_file())
+    for scan_path in scan_files:
+        display = scan_path.relative_to(run_dir).as_posix()
+        _scan_privacy_file(scan_path, display, report)
+
+    report["known_json_paths"] = sorted(known_paths_observed)
+    report["unmapped_json_paths"] = sorted(unmapped_paths_observed)
+    report["counts"]["known_json_paths_observed"] = len(known_paths_observed)
+    report["counts"]["unmapped_json_paths_observed"] = len(unmapped_paths_observed)
+    if unmapped_paths_observed:
+        _add_validation_issue(
+            report,
+            "information",
+            "UNMAPPED_JSON_PATHS_OBSERVED",
+            f"Observed {len(unmapped_paths_observed)} distinct JSON paths not present in the current master field database.",
+        )
+
+    errors = report["counts"]["errors"]
+    warnings = report["counts"]["warnings"]
+    report["status"] = "FAIL" if errors else ("PASS_WITH_WARNINGS" if warnings else "PASS")
+    if write_reports:
+        write_json(run_dir / VALIDATION_JSON_FILENAME, report)
+        _write_validation_text(run_dir / VALIDATION_TEXT_FILENAME, report)
+    return report
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Capture one Yahoo Finance Quote response per symbol and preserve evidence files."
+    )
+    parser.add_argument(
+        "--validate-run",
+        type=Path,
+        help="Validate an existing run folder and write run-validation.json and run-validation.txt.",
     )
     input_group = parser.add_mutually_exclusive_group()
     input_group.add_argument(
@@ -1073,7 +1720,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="anonymous-crumb",
         help="Yahoo request authentication mode. Default establishes an anonymous in-memory cookie and crumb.",
     )
-    parser.add_argument("--outdir", type=Path, default=Path("captures/local"), help="Parent output directory.")
+    parser.add_argument(
+        "--outdir",
+        type=Path,
+        default=DEFAULT_OUTDIR,
+        help=f"Parent output directory (default: {DEFAULT_OUTDIR}).",
+    )
     parser.add_argument(
         "--master-fields",
         type=Path,
@@ -1105,6 +1757,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
+        if args.validate_run is not None:
+            report = validate_run(args.validate_run, master_field_path=args.master_fields)
+            print(f"Validation status: {report['status']}")
+            print(f"Run folder: {args.validate_run}")
+            print(f"Errors: {report['counts']['errors']}")
+            print(f"Warnings: {report['counts']['warnings']}")
+            print(f"Unmapped JSON paths: {report['counts']['unmapped_json_paths_observed']}")
+            print(f"Reports: {args.validate_run / VALIDATION_JSON_FILENAME}")
+            print(f"         {args.validate_run / VALIDATION_TEXT_FILENAME}")
+            return 0 if report["counts"]["errors"] == 0 else 2
+
         retry_policy = RetryPolicy(
             maximum_attempts=args.max_attempts,
             backoff_seconds=parse_backoff(args.backoff_seconds, args.max_attempts),
@@ -1121,6 +1784,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Capture schema: {CAPTURE_SCHEMA_VERSION}")
             print(f"Endpoint: {DEFAULT_ENDPOINT_ID}")
             print(f"Authentication: {args.auth_mode}")
+            print(f"Default output: {DEFAULT_OUTDIR}")
             print(f"Symbols ({len(symbol_requests)}):")
             for sequence, item in enumerate(symbol_requests, start=1):
                 print(f"  {sequence:02d}. {item.symbol} [{item.project_security_type or 'Unspecified'}]")
@@ -1136,6 +1800,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             retry_policy=retry_policy,
             user_agent=args.user_agent,
             auth_mode=args.auth_mode,
+            repository_root=REPOSITORY_ROOT,
+            progress=print,
         )
     except CaptureInputError as exc:
         parser.error(str(exc))

@@ -1,10 +1,10 @@
-# Yahoo Finance Capture Utility — v0.4.1
+# Yahoo Finance Capture Utility — v0.4.2
 
-This utility implements the v0.3.9 evidence-capture format for the Yahoo Finance **Quote** endpoint. v0.4.1 adds an anonymous, in-memory Yahoo cookie-and-crumb session after the first live v0.4.0 run returned HTTP 401 for all 16 symbols.
+This utility captures and validates evidence from the Yahoo Finance **Quote** endpoint. It uses only Python 3.10+ standard-library modules and does not require a Yahoo username or password.
 
-It uses only Python 3.10+ standard-library modules. It does not require a Yahoo username or password.
+v0.4.2 adds portable path handling and validation of completed capture runs. The v0.4.1 anonymous, in-memory cookie-and-crumb session remains unchanged.
 
-## What it does
+## Capture workflow
 
 For each enabled symbol, in table order, the utility:
 
@@ -12,15 +12,15 @@ For each enabled symbol, in table order, the utility:
 2. obtains a temporary Yahoo crumb;
 3. sends one Quote request;
 4. refreshes the anonymous session once if Yahoo returns HTTP 401 or 403;
-5. records UTC request and response times and elapsed milliseconds;
-6. preserves the final response body byte-for-byte;
-7. computes a SHA-256 digest;
-8. writes a metadata sidecar;
-9. classifies returned, empty, omitted-symbol, HTTP, rate-limit, network, and parse results;
-10. writes deterministic normalized text for valid JSON; and
-11. updates a run manifest.
+5. preserves the final response body byte-for-byte;
+6. computes a SHA-256 digest;
+7. writes a metadata sidecar and normalized text;
+8. updates the run manifest; and
+9. displays a progress line such as:
 
-The utility does not bypass authentication, throttling, rate limits, or other access controls.
+```text
+[01/16] AAPL ... HTTP 200 SUCCESS_RESULT_RETURNED
+```
 
 ## Session privacy
 
@@ -31,90 +31,172 @@ Cookie and crumb values:
 - are redacted from stored request URLs; and
 - are discarded when the process ends.
 
-The manifest stores only non-sensitive facts such as the session strategy, whether a crumb was present, cookie count, and refresh count.
+## Windows: expected directory and command
+
+For the clearest workflow, open Command Prompt from the repository root, for example:
+
+```text
+C:\Users\<name>\Downloads\YahooFinanceAPI-Reference-main
+```
+
+The file being run is expected at:
+
+```text
+tools\capture-utility\yahoo_capture.py
+```
+
+### Dry run
+
+Run from the repository root:
+
+```text
+py tools\capture-utility\yahoo_capture.py --dry-run
+```
+
+### Full capture
+
+Run from the repository root:
+
+```text
+py tools\capture-utility\yahoo_capture.py
+```
+
+The default destination is fixed at repository-root:
+
+```text
+captures\local
+```
+
+Unlike earlier versions, this default no longer changes when the command is launched from another directory.
 
 ## Input table
 
-Edit `symbols.csv`. The supported columns are:
+Edit `tools/capture-utility/symbols.csv`. Supported columns are:
 
 | Column | Required | Meaning |
 |---|---|---|
 | `symbol` | Yes | Exact Yahoo symbol |
 | `enabled` | No | `yes/no`, `true/false`, `1/0`, or blank for enabled |
 | `project_security_type` | No | Project category such as Stock, ETF, or Index |
-| `endpoint_id` | No | Must be `quote` in v0.4.1 |
+| `endpoint_id` | No | Must be `quote` in v0.4.2 |
 | `notes` | No | User annotation copied into metadata |
 
 At most 30 rows may be enabled. Full URLs are rejected as symbols.
 
-## Dry run
-
-Validate the table and display request order without contacting Yahoo:
-
-```bash
-python tools/capture-utility/yahoo_capture.py --dry-run
-```
-
-## Capture the table
-
-```bash
-python tools/capture-utility/yahoo_capture.py
-```
-
-The default authentication mode is `anonymous-crumb`.
-
-## Diagnostic unauthenticated mode
-
-To reproduce a bare Quote request without cookie-and-crumb setup:
-
-```bash
-python tools/capture-utility/yahoo_capture.py --auth-mode none --symbols AAPL
-```
-
-This mode is for diagnosis and may return HTTP 401.
-
 ## Quick custom capture
 
-```bash
-python tools/capture-utility/yahoo_capture.py --symbols AAPL,MSFT,SPY
+Run from the repository root:
+
+```text
+py tools\capture-utility\yahoo_capture.py --symbols AAPL,MSFT,SPY
 ```
+
+## Validate a completed run
+
+Run from the repository root. Replace `<run-folder>` with the dated folder name:
+
+```text
+py tools\capture-utility\yahoo_capture.py --validate-run captures\local\<run-folder>
+```
+
+Validation checks include:
+
+- manifest readability and completion state;
+- request count, order, symbols, and sequences;
+- metadata sidecars matching manifest entries;
+- raw-response SHA-256 and byte counts;
+- referenced, missing, duplicate, unsafe, and extra files;
+- normalized and error-file references;
+- summary counts versus request classifications;
+- unredacted crumb, cookie, and authorization values;
+- legacy absolute local paths; and
+- known versus unmapped JSON paths.
+
+Two reports are written into the run folder:
+
+```text
+run-validation.json
+run-validation.txt
+```
+
+Validation status is:
+
+- `PASS` — no errors or warnings;
+- `PASS_WITH_WARNINGS` — no errors, but review warnings exist; or
+- `FAIL` — one or more errors exist.
+
+Unmapped JSON paths are informational observations. They are not automatically promoted into the master field database.
 
 ## Conservative request controls
 
 Defaults are one second between symbols, up to three attempts, retry delays of two and five seconds, and a 30-second timeout.
 
-```bash
-python tools/capture-utility/yahoo_capture.py \
-  --pause-ms 1500 \
-  --max-attempts 3 \
-  --backoff-seconds 3,8 \
-  --timeout 30
+```text
+py tools\capture-utility\yahoo_capture.py --pause-ms 1500 --max-attempts 3 --backoff-seconds 3,8 --timeout 30
 ```
 
 Network failures and HTTP 429, 500, 502, 503, and 504 use the normal retry policy. HTTP 401 or 403 triggers at most one anonymous-session refresh for the entire run.
 
-## Output
+## Diagnostic unauthenticated mode
 
-Each run is written under `captures/local/`:
+```text
+py tools\capture-utility\yahoo_capture.py --auth-mode none --symbols AAPL
+```
+
+This diagnostic mode may return HTTP 401.
+
+## Development tests
+
+`pytest` is needed only for development testing, not normal capture or validation.
+
+Install it once:
+
+```text
+py -m pip install pytest
+```
+
+Run tests from the repository root:
+
+```text
+py -m pytest -q
+```
+
+Compile-check the utility:
+
+```text
+py -m py_compile tools\capture-utility\yahoo_capture.py
+```
+
+## Output layout
 
 ```text
 captures/local/
   2026-07-11T20-00-00.000Z_run-0001/
     run-manifest.json
+    run-validation.json       # after --validate-run
+    run-validation.txt        # after --validate-run
     raw/
     metadata/
     normalized/
     errors/
 ```
 
-Raw response files are never reformatted. Capture context is stored in the filename, sidecar, normalized output, and manifest.
+Raw response files are never reformatted. Manifest input and master-database paths are stored as repository-relative references when possible. External inputs are recorded by filename only.
 
-The command returns:
+## Exit codes
 
-- exit code `0` when every requested symbol returned a matching result;
-- exit code `2` when the run completed but one or more results require review; and
-- exit code `1` for an operating-system failure. Invalid command input is reported by the command-line parser.
+Capture:
+
+- `0` when every requested symbol returned a matching result;
+- `2` when the run completed but one or more results require review; and
+- `1` for an operating-system failure.
+
+Validation:
+
+- `0` when no validation errors are found, including `PASS_WITH_WARNINGS`;
+- `2` when validation status is `FAIL`; and
+- `1` for an operating-system failure.
 
 ## Current scope
 
-v0.4.1 captures the Quote endpoint only. Chart, QuoteSummary, Search, Screener, Options, comparison utilities, and browser-login support remain later stages.
+v0.4.2 captures and validates the Quote endpoint only. Chart, QuoteSummary, Search, Screener, Options, comparison utilities, and scheduled capture remain later stages.
