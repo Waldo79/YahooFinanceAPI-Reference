@@ -5,6 +5,7 @@ SPY,yes,ETF,quote,Representative ETF
 QQQI,yes,ETF,quote,Representative ETF
 NAC,yes,Closed-end fund,quote,Representative California municipal CEF
 PDI,yes,Closed-end fund,quote,Representative taxable CEF
+XPDIX,yes,Mutual fund	quote,PDI closed-end fund end-of-day NAV companion symbol
 XNACX,yes,Mutual fund,quote,Representative mutual fund
 VTSAX,yes,Mutual fund,quote,Representative mutual fund
 ZT=F,yes,Futures,quote,Representative Treasury futures contract
