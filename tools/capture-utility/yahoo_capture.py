@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Yahoo Finance evidence capture utility.
 
-v0.4.0 implements the v0.3.9 capture-format specification for the Quote
-endpoint. It deliberately uses only the Python standard library.
+v0.4.1 implements the v0.3.9 capture-format specification for the Quote
+endpoint and adds anonymous Yahoo cookie-and-crumb session handling. It uses
+only the Python standard library.
 
 The utility:
 - reads up to 30 enabled symbols from a CSV table (or --symbols),
+- establishes an anonymous Yahoo cookie-and-crumb session,
 - sends one Quote request per symbol, sequentially,
-- preserves each HTTP response body byte-for-byte,
+- refreshes the anonymous session once after HTTP 401 or 403,
+- preserves each final HTTP response body byte-for-byte,
 - writes a metadata sidecar and SHA-256 digest,
 - writes deterministic normalized text for valid JSON responses, and
 - writes a run manifest covering every attempted request.
@@ -27,20 +30,31 @@ import sys
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+from http.cookiejar import CookieJar
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
-from urllib.request import Request, urlopen
+from urllib.request import HTTPCookieProcessor, Request, build_opener, urlopen
 
-UTILITY_VERSION = "0.4.0"
+UTILITY_VERSION = "0.4.1"
 CAPTURE_SCHEMA_VERSION = "0.3.9"
 DEFAULT_ENDPOINT_ID = "quote"
+DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/150.0.0.0 Safari/537.36"
+)
 DEFAULT_BASE_URL = "https://query1.finance.yahoo.com/v7/finance/quote"
+YAHOO_BASIC_COOKIE_URL = "https://fc.yahoo.com"
+YAHOO_BASIC_CRUMB_URL = "https://query1.finance.yahoo.com/v1/test/getcrumb"
+YAHOO_FALLBACK_COOKIE_URL = "https://finance.yahoo.com/quote/AAPL"
+YAHOO_FALLBACK_CRUMB_URL = "https://query2.finance.yahoo.com/v1/test/getcrumb"
 DEFAULT_SYMBOLS_FILE = Path(__file__).with_name("symbols.csv")
 DEFAULT_MASTER_FIELDS = Path(__file__).resolve().parents[2] / "data" / "master_field_database.csv"
 MAX_SYMBOLS = 30
 RETRYABLE_HTTP_STATUSES = {429, 500, 502, 503, 504}
+AUTH_REFRESH_HTTP_STATUSES = {401, 403}
 TRUE_VALUES = {"1", "true", "yes", "y", "on", "enabled"}
 FALSE_VALUES = {"0", "false", "no", "n", "off", "disabled"}
 SENSITIVE_QUERY_KEYS = {"crumb", "token", "authorization", "auth", "cookie", "session"}
@@ -51,6 +65,10 @@ TIMESTAMP_FIELD_RE = re.compile(r"(?:time|timestamp|datemilliseconds)$", re.IGNO
 
 class CaptureInputError(ValueError):
     """Raised when command input is invalid before any request is sent."""
+
+
+class YahooSessionError(RuntimeError):
+    """Raised when an anonymous Yahoo cookie-and-crumb session cannot be prepared."""
 
 
 @dataclass(frozen=True)
@@ -115,6 +133,169 @@ class ResponseAnalysis:
     returned_symbols: tuple[str, ...]
     parsed_json: Any | None
     parse_error: str | None
+
+
+class NoAuthSession:
+    """Diagnostic session that sends requests without Yahoo cookie/crumb setup."""
+
+    mode = "none"
+    can_refresh = False
+
+    def __init__(self, *, opener: Callable[..., Any] = urlopen):
+        self._opener = opener
+        self.strategy: str | None = None
+        self.refresh_count = 0
+        self.last_error: str | None = None
+
+    def open(self, request: Request, timeout: float):
+        return self._opener(request, timeout=timeout)
+
+    def quote_url(self, symbol: str, base_url: str, *, force_refresh: bool = False) -> str:
+        return build_quote_url(symbol, base_url)
+
+    def public_summary(self) -> dict[str, Any]:
+        return {
+            "mode": self.mode,
+            "strategy": None,
+            "cookie_count": 0,
+            "crumb_present": False,
+            "refresh_count": 0,
+            "last_error": self.last_error,
+            "sensitive_values_persisted": False,
+        }
+
+
+class YahooAnonymousSession:
+    """In-memory anonymous Yahoo cookie-and-crumb session.
+
+    Cookie and crumb values are never returned by ``public_summary`` and are
+    never written to capture metadata. The same in-memory session is reused for
+    the complete run.
+    """
+
+    mode = "anonymous-cookie-crumb"
+    can_refresh = True
+
+    def __init__(
+        self,
+        *,
+        user_agent: str,
+        timeout_seconds: float,
+        opener: Callable[..., Any] | None = None,
+        cookie_jar: CookieJar | None = None,
+    ):
+        self.user_agent = user_agent
+        self.timeout_seconds = timeout_seconds
+        self.cookie_jar = cookie_jar or CookieJar()
+        if opener is None:
+            self._opener = build_opener(HTTPCookieProcessor(self.cookie_jar)).open
+        else:
+            self._opener = opener
+        self._crumb: str | None = None
+        self.strategy: str | None = None
+        self.refresh_count = 0
+        self.last_error: str | None = None
+
+    def open(self, request: Request, timeout: float):
+        return self._opener(request, timeout=timeout)
+
+    def _prime_cookie(self, url: str) -> str | None:
+        request = make_request(url, self.user_agent, accept="text/html,application/xhtml+xml,*/*")
+        try:
+            with self.open(request, timeout=self.timeout_seconds) as response:
+                response.read()
+            return None
+        except HTTPError as exc:
+            # fc.yahoo.com commonly returns a non-success page while still
+            # establishing a cookie. Continue unless Yahoo is throttling.
+            if exc.code == 429:
+                raise YahooSessionError("Yahoo rate-limited anonymous cookie setup (HTTP 429).") from exc
+            _read_http_error_body(exc)
+            return f"cookie bootstrap returned HTTP {exc.code}"
+        except (URLError, TimeoutError, socket.timeout, OSError) as exc:
+            return f"cookie bootstrap failed: {type(exc).__name__}: {exc}"
+
+    @staticmethod
+    def _validate_crumb(text: str) -> str | None:
+        crumb = text.strip()
+        lowered = crumb.lower()
+        if not crumb or len(crumb) > 512:
+            return None
+        if "too many requests" in lowered or lowered.startswith("<!doctype") or lowered.startswith("<html"):
+            return None
+        if "\r" in crumb or "\n" in crumb:
+            return None
+        return crumb
+
+    def _fetch_crumb(self, url: str) -> str:
+        request = make_request(url, self.user_agent, accept="text/plain,*/*")
+        try:
+            with self.open(request, timeout=self.timeout_seconds) as response:
+                status = int(getattr(response, "status", response.getcode()))
+                body = response.read()
+        except HTTPError as exc:
+            _read_http_error_body(exc)
+            if exc.code == 429:
+                raise YahooSessionError("Yahoo rate-limited crumb setup (HTTP 429).") from exc
+            raise YahooSessionError(f"crumb endpoint returned HTTP {exc.code}") from exc
+        except (URLError, TimeoutError, socket.timeout, OSError) as exc:
+            raise YahooSessionError(f"crumb endpoint failed: {type(exc).__name__}: {exc}") from exc
+        if not 200 <= status < 300:
+            raise YahooSessionError(f"crumb endpoint returned HTTP {status}")
+        crumb = self._validate_crumb(body.decode("utf-8", errors="replace"))
+        if crumb is None:
+            raise YahooSessionError("crumb endpoint returned an invalid or empty value")
+        return crumb
+
+    def ensure_crumb(self, *, force_refresh: bool = False) -> str:
+        if self._crumb is not None and not force_refresh:
+            return self._crumb
+        if force_refresh:
+            self.refresh_count += 1
+            self._crumb = None
+            self.strategy = None
+            try:
+                self.cookie_jar.clear()
+            except Exception:
+                pass
+
+        errors: list[str] = []
+        strategies = (
+            ("basic-query1", YAHOO_BASIC_COOKIE_URL, YAHOO_BASIC_CRUMB_URL),
+            ("finance-query2-fallback", YAHOO_FALLBACK_COOKIE_URL, YAHOO_FALLBACK_CRUMB_URL),
+        )
+        for strategy, cookie_url, crumb_url in strategies:
+            prime_note = self._prime_cookie(cookie_url)
+            try:
+                crumb = self._fetch_crumb(crumb_url)
+            except YahooSessionError as exc:
+                note = str(exc)
+                if prime_note:
+                    note = f"{prime_note}; {note}"
+                errors.append(f"{strategy}: {note}")
+                continue
+            self._crumb = crumb
+            self.strategy = strategy
+            self.last_error = None
+            return crumb
+
+        self.last_error = "Could not establish an anonymous Yahoo cookie-and-crumb session: " + "; ".join(errors)
+        raise YahooSessionError(self.last_error)
+
+    def quote_url(self, symbol: str, base_url: str, *, force_refresh: bool = False) -> str:
+        crumb = self.ensure_crumb(force_refresh=force_refresh)
+        return build_quote_url(symbol, base_url, crumb=crumb)
+
+    def public_summary(self) -> dict[str, Any]:
+        return {
+            "mode": self.mode,
+            "strategy": self.strategy,
+            "cookie_count": sum(1 for _ in self.cookie_jar),
+            "crumb_present": self._crumb is not None,
+            "refresh_count": self.refresh_count,
+            "last_error": self.last_error,
+            "sensitive_values_persisted": False,
+        }
 
 
 def utc_now() -> datetime:
@@ -233,8 +414,11 @@ def filename_symbol(symbol: str) -> str:
     return value or "symbol"
 
 
-def build_quote_url(symbol: str, base_url: str = DEFAULT_BASE_URL) -> str:
-    return base_url + "?" + urlencode({"symbols": symbol})
+def build_quote_url(symbol: str, base_url: str = DEFAULT_BASE_URL, crumb: str | None = None) -> str:
+    params = {"symbols": symbol}
+    if crumb is not None:
+        params["crumb"] = crumb
+    return base_url + "?" + urlencode(params)
 
 
 def redact_url(url: str) -> str:
@@ -245,12 +429,13 @@ def redact_url(url: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query_items), ""))
 
 
-def make_request(url: str, user_agent: str) -> Request:
+def make_request(url: str, user_agent: str, *, accept: str = "application/json,text/plain,*/*") -> Request:
     return Request(
         url,
         headers={
             "User-Agent": user_agent,
-            "Accept": "application/json,text/plain,*/*",
+            "Accept": accept,
+            "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "identity",
         },
     )
@@ -365,6 +550,33 @@ def request_with_retry(
         elapsed_ms=total_elapsed_ms,
         attempts=attempts,
         error_message=last_error,
+    )
+
+
+def combine_http_captures(first: HttpCapture, second: HttpCapture) -> HttpCapture:
+    """Combine a pre-refresh response with the response after session refresh."""
+    attempts = list(first.attempts)
+    for record in second.attempts:
+        attempts.append(
+            AttemptRecord(
+                attempt=len(attempts) + 1,
+                requested_at_utc=record.requested_at_utc,
+                response_received_at_utc=record.response_received_at_utc,
+                elapsed_ms=record.elapsed_ms,
+                http_status=record.http_status,
+                error=record.error,
+            )
+        )
+    return HttpCapture(
+        body=second.body,
+        http_status=second.http_status,
+        content_type=second.content_type,
+        final_url=second.final_url,
+        requested_at_utc=first.requested_at_utc,
+        response_received_at_utc=second.response_received_at_utc,
+        elapsed_ms=first.elapsed_ms + second.elapsed_ms,
+        attempts=attempts,
+        error_message=second.error_message,
     )
 
 
@@ -598,6 +810,7 @@ def summary_template() -> dict[str, int]:
         "http_error": 0,
         "parse_error": 0,
         "rate_limit_or_throttle": 0,
+        "network_error": 0,
         "other": 0,
     }
 
@@ -621,22 +834,54 @@ def capture_one(
     retry_policy: RetryPolicy,
     user_agent: str,
     base_url: str,
-    opener: Callable[..., Any],
+    request_session: Any,
     sleep: Callable[[float], None],
     clock: Callable[[], float],
     now: Callable[[], datetime],
 ) -> dict[str, Any]:
-    request_url = build_quote_url(item.symbol, base_url)
+    auth_session_error: str | None = None
+    auth_refresh_performed = False
+    try:
+        request_url = request_session.quote_url(item.symbol, base_url)
+    except YahooSessionError as exc:
+        auth_session_error = str(exc)
+        request_url = build_quote_url(item.symbol, base_url)
+
     capture = request_with_retry(
         request_url,
         timeout_seconds=timeout_seconds,
         retry_policy=retry_policy,
         user_agent=user_agent,
-        opener=opener,
+        opener=request_session.open,
         sleep=sleep,
         clock=clock,
         now=now,
     )
+
+    if (
+        capture.http_status in AUTH_REFRESH_HTTP_STATUSES
+        and getattr(request_session, "can_refresh", False)
+        and getattr(request_session, "refresh_count", 0) < 1
+    ):
+        try:
+            refreshed_url = request_session.quote_url(item.symbol, base_url, force_refresh=True)
+            refreshed_capture = request_with_retry(
+                refreshed_url,
+                timeout_seconds=timeout_seconds,
+                retry_policy=retry_policy,
+                user_agent=user_agent,
+                opener=request_session.open,
+                sleep=sleep,
+                clock=clock,
+                now=now,
+            )
+            capture = combine_http_captures(capture, refreshed_capture)
+            request_url = refreshed_url
+            auth_refresh_performed = True
+        except YahooSessionError as exc:
+            auth_session_error = (
+                f"{auth_session_error}; refresh failed: {exc}" if auth_session_error else f"refresh failed: {exc}"
+            )
     analysis = analyze_quote_response(capture.body, capture.http_status, item.symbol)
     received_filename_stamp = capture.response_received_at_utc.replace(":", "-")
     base_name = f"{sequence:04d}_{filename_symbol(item.symbol)}_{item.endpoint_id}_{received_filename_stamp}"
@@ -697,6 +942,12 @@ def capture_one(
         "result_classification": analysis.classification,
         "error_message": error_message,
         "request_url_redacted": redact_url(capture.final_url or request_url),
+        "auth_mode": getattr(request_session, "mode", "unknown"),
+        "auth_strategy": getattr(request_session, "strategy", None),
+        "auth_refresh_performed": auth_refresh_performed,
+        "auth_refresh_count_run": getattr(request_session, "refresh_count", 0),
+        "auth_session_error": auth_session_error,
+        "session_sensitive_values_persisted": False,
         "notes": item.notes,
     }
     metadata_path = run_dir / "metadata" / f"{base_name}.meta.json"
@@ -716,7 +967,9 @@ def run_capture(
     retry_policy: RetryPolicy,
     user_agent: str,
     base_url: str = DEFAULT_BASE_URL,
-    opener: Callable[..., Any] = urlopen,
+    auth_mode: str = "anonymous-crumb",
+    opener: Callable[..., Any] | None = None,
+    request_session: Any | None = None,
     sleep: Callable[[float], None] = time.sleep,
     clock: Callable[[], float] = time.perf_counter,
     now: Callable[[], datetime] = utc_now,
@@ -729,6 +982,19 @@ def run_capture(
         raise CaptureInputError("--pause-ms cannot be negative.")
     if timeout_seconds <= 0:
         raise CaptureInputError("--timeout must be greater than zero.")
+    if auth_mode not in {"anonymous-crumb", "none"}:
+        raise CaptureInputError("--auth-mode must be 'anonymous-crumb' or 'none'.")
+
+    if request_session is None:
+        selected_opener = opener or urlopen
+        if auth_mode == "none":
+            request_session = NoAuthSession(opener=selected_opener)
+        else:
+            request_session = YahooAnonymousSession(
+                user_agent=user_agent,
+                timeout_seconds=timeout_seconds,
+                opener=opener,
+            )
 
     started_dt = now()
     run_id, run_dir = next_run_id(outdir, started_dt)
@@ -749,6 +1015,7 @@ def run_capture(
             "maximum_attempts": retry_policy.maximum_attempts,
             "backoff_seconds": list(retry_policy.backoff_seconds),
         },
+        "authentication": request_session.public_summary(),
         "run_started_at_utc": format_utc(started_dt),
         "run_completed_at_utc": None,
         "symbols_requested": len(symbol_requests),
@@ -770,13 +1037,14 @@ def run_capture(
             retry_policy=retry_policy,
             user_agent=user_agent,
             base_url=base_url,
-            opener=opener,
+            request_session=request_session,
             sleep=sleep,
             clock=clock,
             now=now,
         )
         manifest["requests"].append(metadata)
         increment_summary(manifest["summary"], metadata["result_classification"])
+        manifest["authentication"] = request_session.public_summary()
         write_json(manifest_path, manifest)
         if sequence < len(symbol_requests) and pause_between_requests_ms:
             sleep(pause_between_requests_ms / 1000.0)
@@ -799,6 +1067,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     input_group.add_argument("--symbols", help="Comma-separated symbols for a quick run instead of a CSV table.")
     parser.add_argument("--endpoint", choices=[DEFAULT_ENDPOINT_ID], default=DEFAULT_ENDPOINT_ID)
+    parser.add_argument(
+        "--auth-mode",
+        choices=["anonymous-crumb", "none"],
+        default="anonymous-crumb",
+        help="Yahoo request authentication mode. Default establishes an anonymous in-memory cookie and crumb.",
+    )
     parser.add_argument("--outdir", type=Path, default=Path("captures/local"), help="Parent output directory.")
     parser.add_argument(
         "--master-fields",
@@ -816,7 +1090,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--user-agent",
-        default=f"YahooFinanceAPI-Reference/{UTILITY_VERSION} (+public observation utility)",
+        default=DEFAULT_USER_AGENT,
     )
     parser.add_argument(
         "--dry-run",
@@ -846,6 +1120,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Utility version: {UTILITY_VERSION}")
             print(f"Capture schema: {CAPTURE_SCHEMA_VERSION}")
             print(f"Endpoint: {DEFAULT_ENDPOINT_ID}")
+            print(f"Authentication: {args.auth_mode}")
             print(f"Symbols ({len(symbol_requests)}):")
             for sequence, item in enumerate(symbol_requests, start=1):
                 print(f"  {sequence:02d}. {item.symbol} [{item.project_security_type or 'Unspecified'}]")
@@ -860,6 +1135,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             timeout_seconds=args.timeout,
             retry_policy=retry_policy,
             user_agent=args.user_agent,
+            auth_mode=args.auth_mode,
         )
     except CaptureInputError as exc:
         parser.error(str(exc))
