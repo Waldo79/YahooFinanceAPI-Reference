@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Waldo79/YahooFinanceAPI-Reference/schemas/run-validation.schema.json",
+  "title": "YahooFinanceAPI-Reference run validation report",
+  "type": "object",
+  "required": [
+    "validation_schema_version",
+    "validator_utility_version",
+    "run_folder",
+    "validated_at_utc",
+    "status",
+    "counts",
+    "issues",
+    "known_json_paths",
+    "unmapped_json_paths"
+  ],
+  "properties": {
+    "validation_schema_version": {"type": "string", "const": "0.4.2"},
+    "validator_utility_version": {"type": "string"},
+    "run_folder": {"type": "string", "minLength": 1},
+    "run_id": {"type": ["string", "null"]},
+    "validated_at_utc": {"type": "string"},
+    "status": {"enum": ["PASS", "PASS_WITH_WARNINGS", "FAIL"]},
+    "counts": {
+      "type": "object",
+      "required": [
+        "errors",
+        "warnings",
+        "information",
+        "manifest_requests",
+        "raw_files_checked",
+        "metadata_files_checked",
+        "normalized_files_checked",
+        "error_files_checked",
+        "known_json_paths_observed",
+        "unmapped_json_paths_observed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "errors": {"type": "integer", "minimum": 0},
+        "warnings": {"type": "integer", "minimum": 0},
+        "information": {"type": "integer", "minimum": 0},
+        "manifest_requests": {"type": "integer", "minimum": 0},
+        "raw_files_checked": {"type": "integer", "minimum": 0},
+        "metadata_files_checked": {"type": "integer", "minimum": 0},
+        "normalized_files_checked": {"type": "integer", "minimum": 0},
+        "error_files_checked": {"type": "integer", "minimum": 0},
+        "known_json_paths_observed": {"type": "integer", "minimum": 0},
+        "unmapped_json_paths_observed": {"type": "integer", "minimum": 0}
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "code", "message"],
+        "properties": {
+          "severity": {"enum": ["error", "warning", "information"]},
+          "code": {"type": "string", "minLength": 1},
+          "message": {"type": "string", "minLength": 1},
+          "file": {"type": "string"},
+          "sequence": {"type": "integer", "minimum": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "known_json_paths": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "unmapped_json_paths": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}
