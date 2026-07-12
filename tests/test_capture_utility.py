@@ -333,3 +333,103 @@ def test_anonymous_session_uses_query2_fallback_when_query1_crumb_is_invalid():
         capture.YAHOO_FALLBACK_COOKIE_URL,
         capture.YAHOO_FALLBACK_CRUMB_URL,
     ]
+
+
+def make_valid_run(tmp_path: Path, progress=None):
+    raw = b'{"quoteResponse":{"result":[{"regularMarketTime":1783800000,"symbol":"MSFT"}],"error":null}}\n'
+
+    def opener(request, timeout):
+        return FakeResponse(raw, url=request.full_url)
+
+    master = tmp_path / "master.csv"
+    write_master_fields(master)
+    repository_root = tmp_path / "repo"
+    symbols_file = repository_root / "tools" / "capture-utility" / "symbols.csv"
+    symbols_file.parent.mkdir(parents=True)
+    symbols_file.write_text("symbol,enabled\nMSFT,yes\n", encoding="utf-8")
+    run_dir, manifest = capture.run_capture(
+        [capture.SymbolRequest("MSFT", project_security_type="Stock")],
+        outdir=tmp_path / "captures",
+        input_file=str(symbols_file),
+        master_field_path=master,
+        pause_between_requests_ms=0,
+        timeout_seconds=10,
+        retry_policy=capture.RetryPolicy(1, ()),
+        user_agent="test-agent",
+        auth_mode="none",
+        opener=opener,
+        sleep=lambda seconds: None,
+        clock=IncrementingClock(),
+        now=IncrementingNow(),
+        repository_root=repository_root,
+        progress=progress,
+    )
+    return run_dir, manifest, master, repository_root
+
+
+def test_default_output_is_repository_root_relative():
+    assert capture.DEFAULT_OUTDIR == capture.REPOSITORY_ROOT / "captures" / "local"
+    assert capture.DEFAULT_OUTDIR.is_absolute()
+
+
+def test_manifest_paths_are_portable_and_do_not_expose_external_directories(tmp_path: Path):
+    run_dir, manifest, master, repository_root = make_valid_run(tmp_path)
+    assert manifest["input_file"] == "tools/capture-utility/symbols.csv"
+    assert manifest["input_file_scope"] == "repository"
+    assert manifest["master_field_database"] == master.name
+    assert manifest["master_field_database_scope"] == "external"
+    saved = (run_dir / "run-manifest.json").read_text(encoding="utf-8")
+    assert str(tmp_path) not in saved
+
+
+def test_capture_progress_reports_sequence_symbol_http_and_classification(tmp_path: Path):
+    progress: list[str] = []
+    make_valid_run(tmp_path, progress=progress.append)
+    assert progress == ["[01/01] MSFT ... HTTP 200 SUCCESS_RESULT_RETURNED"]
+
+
+def test_validate_run_passes_and_writes_reports(tmp_path: Path):
+    run_dir, manifest, master, repository_root = make_valid_run(tmp_path)
+    report = capture.validate_run(run_dir, master_field_path=master)
+    assert report["status"] == "PASS"
+    assert report["counts"]["errors"] == 0
+    assert report["counts"]["raw_files_checked"] == 1
+    assert report["counts"]["metadata_files_checked"] == 1
+    assert report["counts"]["normalized_files_checked"] == 1
+    assert (run_dir / capture.VALIDATION_JSON_FILENAME).exists()
+    assert (run_dir / capture.VALIDATION_TEXT_FILENAME).exists()
+
+
+def test_validate_run_detects_raw_hash_and_size_changes(tmp_path: Path):
+    run_dir, manifest, master, repository_root = make_valid_run(tmp_path)
+    raw_path = run_dir / manifest["requests"][0]["raw_response_file"]
+    raw_path.write_bytes(raw_path.read_bytes() + b"tampered")
+    report = capture.validate_run(run_dir, master_field_path=master, write_reports=False)
+    codes = {issue["code"] for issue in report["issues"]}
+    assert report["status"] == "FAIL"
+    assert "RAW_SHA256_MISMATCH" in codes
+    assert "RAW_SIZE_MISMATCH" in codes
+
+
+def test_validate_run_detects_unredacted_crumb_without_echoing_secret(tmp_path: Path):
+    run_dir, manifest, master, repository_root = make_valid_run(tmp_path)
+    metadata_rel = manifest["requests"][0]["metadata_file"]
+    metadata_path = run_dir / metadata_rel
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["request_url_redacted"] = "https://example.test/quote?symbols=MSFT&crumb=private-value"
+    metadata_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    manifest["requests"][0] = metadata
+    (run_dir / "run-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    report = capture.validate_run(run_dir, master_field_path=master, write_reports=False)
+    assert report["status"] == "FAIL"
+    assert any(issue["code"] == "UNREDACTED_CRUMB" for issue in report["issues"])
+    assert "private-value" not in json.dumps(report)
+
+
+def test_validate_run_detects_unreferenced_extra_file(tmp_path: Path):
+    run_dir, manifest, master, repository_root = make_valid_run(tmp_path)
+    (run_dir / "raw" / "extra.raw.json").write_text("{}", encoding="utf-8")
+    report = capture.validate_run(run_dir, master_field_path=master, write_reports=False)
+    assert report["status"] == "FAIL"
+    assert any(issue["code"] == "UNREFERENCED_EXTRA_FILE" for issue in report["issues"])
