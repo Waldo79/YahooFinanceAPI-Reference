@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.4.1 — Anonymous Yahoo Session Support
+
+Added anonymous Yahoo cookie-and-crumb handling after the first live v0.4.0 capture returned HTTP 401 Unauthorized for all 16 symbols.
+
+### Added
+
+- In-memory anonymous Yahoo cookie jar
+- Query1 crumb retrieval with a Query2 fallback strategy
+- One forced session refresh after HTTP 401 or 403
+- Browser-compatible default User-Agent
+- `--auth-mode anonymous-crumb` default
+- `--auth-mode none` diagnostic mode
+- Manifest and sidecar session diagnostics without sensitive values
+- Explicit `network_error` summary count
+- Offline tests for crumb insertion, secret redaction, 401 refresh, and Query2 fallback
+
+### Security and privacy
+
+- Cookie and crumb values are never written to project output.
+- Stored request URLs redact the crumb.
+- Session values remain in memory only and are discarded when the process exits.
+- No Yahoo account credentials are requested or used.
+
+### Validation
+
+- Eight offline tests pass.
+- Python byte-code compilation passes.
+- Default 16-symbol table passes dry-run validation.
+- Live validation must be performed from a normal internet-connected user system.
+
 ## v0.4.0 — First Working Capture Utility
 
 Implemented the first executable evidence-capture workflow from the v0.3.9 specifications.

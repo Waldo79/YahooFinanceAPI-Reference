@@ -4,7 +4,7 @@ A public reference and change-tracking project for observed Yahoo Finance API be
 
 ## Current release
 
-v0.4.0 — First Working Capture Utility
+v0.4.1 — Anonymous Yahoo Session Support
 
 This project documents observed Yahoo Finance API endpoint behavior, field/schema changes, symbol coverage, market-state behavior, data timing, and data-quality anomalies over time.
 
@@ -12,21 +12,21 @@ This is not an official Yahoo Finance project. It is also not primarily an appli
 
 ## What this release adds
 
-v0.4.0 turns the v0.3.9 capture specification into the first executable evidence-capture workflow.
+v0.4.1 hardens the first capture utility after the initial live run showed that bare Quote requests returned HTTP 401 Unauthorized.
 
 The utility now provides:
 
+- anonymous Yahoo cookie-and-crumb session setup using only the Python standard library;
+- one automatic session refresh after HTTP 401 or 403;
+- no persistence of cookie or crumb values;
+- redacted request URLs in public evidence;
 - a user-editable CSV table with the 16 representative symbols;
 - sequential one-symbol Quote requests, with a project maximum of 30 enabled rows;
-- byte-for-byte preservation of every received response body;
-- UTC request/response timestamps, elapsed time, HTTP status, content type, and response size;
-- SHA-256 integrity values and per-request metadata sidecars;
-- explicit classifications for returned, empty, omitted-symbol, HTTP, rate-limit, network, and parse outcomes;
-- deterministic normalized text ordered by the master field database; and
-- a run manifest updated after every attempted symbol.
+- byte-for-byte preservation of the final response body for each symbol;
+- UTC timing, HTTP status, content type, response size, SHA-256, sidecars, normalized text, and a run manifest.
 
 ```text
-Symbol table → Sequential Quote requests → Raw evidence + SHA-256 → Metadata + normalized text → Run manifest → Review
+Anonymous session → Symbol table → Sequential Quote requests → Raw evidence + SHA-256 → Metadata + normalized text → Run manifest → Review
 ```
 
 ## Important principles
@@ -72,7 +72,7 @@ See `tools/capture-utility/README.md` for the complete command reference and out
 
 ## Current utility scope
 
-v0.4.0 implements the Quote endpoint first. Chart, QuoteSummary, Search, Screener, Options, comparison, scheduled capture, and workbook export remain later stages.
+v0.4.1 implements the Quote endpoint with anonymous cookie-and-crumb session support. Chart, QuoteSummary, Search, Screener, Options, comparison, scheduled capture, and workbook export remain later stages.
 
 ## Public users
 

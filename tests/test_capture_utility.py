@@ -21,12 +21,19 @@ SPEC.loader.exec_module(capture)
 
 
 class FakeResponse:
-    def __init__(self, body: bytes, *, status: int = 200, url: str = "https://example.test/quote?symbols=MSFT"):
+    def __init__(
+        self,
+        body: bytes,
+        *,
+        status: int = 200,
+        url: str = "https://example.test/quote?symbols=MSFT",
+        content_type: str = "application/json; charset=utf-8",
+    ):
         self._body = body
         self.status = status
         self.url = url
         self.headers = Message()
-        self.headers["Content-Type"] = "application/json; charset=utf-8"
+        self.headers["Content-Type"] = content_type
 
     def read(self) -> bytes:
         return self._body
@@ -131,6 +138,7 @@ def test_capture_run_preserves_raw_bytes_and_writes_manifest(tmp_path: Path):
         timeout_seconds=10,
         retry_policy=capture.RetryPolicy(1, ()),
         user_agent="test-agent",
+        auth_mode="none",
         opener=opener,
         sleep=lambda seconds: None,
         clock=IncrementingClock(),
@@ -192,3 +200,136 @@ def test_retry_on_429_then_success():
     assert result.http_status == 200
     assert result.body == success
     assert len(result.attempts) == 2
+
+
+def test_anonymous_session_adds_crumb_and_never_persists_secret(tmp_path: Path):
+    secret_crumb = "crumb/one=="
+    calls: list[str] = []
+    raw = b'{"quoteResponse":{"result":[{"symbol":"MSFT"}],"error":null}}'
+
+    def opener(request, timeout):
+        calls.append(request.full_url)
+        if request.full_url == capture.YAHOO_BASIC_COOKIE_URL:
+            return FakeResponse(b"cookie", url=request.full_url, content_type="text/html")
+        if request.full_url == capture.YAHOO_BASIC_CRUMB_URL:
+            return FakeResponse(secret_crumb.encode(), url=request.full_url, content_type="text/plain")
+        assert "symbols=MSFT" in request.full_url
+        assert "crumb=crumb%2Fone%3D%3D" in request.full_url
+        return FakeResponse(raw, url=request.full_url)
+
+    master = tmp_path / "master.csv"
+    write_master_fields(master)
+    session = capture.YahooAnonymousSession(
+        user_agent="test-agent",
+        timeout_seconds=10,
+        opener=opener,
+    )
+    run_dir, manifest = capture.run_capture(
+        [capture.SymbolRequest("MSFT")],
+        outdir=tmp_path / "captures",
+        input_file="test.csv",
+        master_field_path=master,
+        pause_between_requests_ms=0,
+        timeout_seconds=10,
+        retry_policy=capture.RetryPolicy(1, ()),
+        user_agent="test-agent",
+        request_session=session,
+        sleep=lambda seconds: None,
+        clock=IncrementingClock(),
+        now=IncrementingNow(),
+    )
+
+    request_meta = manifest["requests"][0]
+    assert request_meta["result_classification"] == "SUCCESS_RESULT_RETURNED"
+    assert request_meta["auth_strategy"] == "basic-query1"
+    assert "crumb=REDACTED" in request_meta["request_url_redacted"]
+    saved = (run_dir / "run-manifest.json").read_text(encoding="utf-8")
+    metadata_saved = (run_dir / request_meta["metadata_file"]).read_text(encoding="utf-8")
+    assert secret_crumb not in saved
+    assert secret_crumb not in metadata_saved
+    assert "crumb%2Fone" not in saved
+    assert manifest["authentication"]["sensitive_values_persisted"] is False
+    assert calls[:2] == [capture.YAHOO_BASIC_COOKIE_URL, capture.YAHOO_BASIC_CRUMB_URL]
+
+
+def test_401_refreshes_session_once_and_retries_successfully(tmp_path: Path):
+    calls: list[str] = []
+    crumb_count = 0
+    success = b'{"quoteResponse":{"result":[{"symbol":"MSFT"}],"error":null}}'
+    headers = Message()
+    headers["Content-Type"] = "application/json"
+
+    def opener(request, timeout):
+        nonlocal crumb_count
+        calls.append(request.full_url)
+        if request.full_url == capture.YAHOO_BASIC_COOKIE_URL:
+            return FakeResponse(b"cookie", url=request.full_url, content_type="text/html")
+        if request.full_url == capture.YAHOO_BASIC_CRUMB_URL:
+            crumb_count += 1
+            crumb = b"old-secret" if crumb_count == 1 else b"new-secret"
+            return FakeResponse(crumb, url=request.full_url, content_type="text/plain")
+        if "crumb=old-secret" in request.full_url:
+            raise HTTPError(request.full_url, 401, "Unauthorized", headers, None)
+        assert "crumb=new-secret" in request.full_url
+        return FakeResponse(success, url=request.full_url)
+
+    master = tmp_path / "master.csv"
+    write_master_fields(master)
+    session = capture.YahooAnonymousSession(
+        user_agent="test-agent",
+        timeout_seconds=10,
+        opener=opener,
+    )
+    run_dir, manifest = capture.run_capture(
+        [capture.SymbolRequest("MSFT")],
+        outdir=tmp_path / "captures",
+        input_file="test.csv",
+        master_field_path=master,
+        pause_between_requests_ms=0,
+        timeout_seconds=10,
+        retry_policy=capture.RetryPolicy(1, ()),
+        user_agent="test-agent",
+        request_session=session,
+        sleep=lambda seconds: None,
+        clock=IncrementingClock(),
+        now=IncrementingNow(),
+    )
+
+    request_meta = manifest["requests"][0]
+    assert request_meta["result_classification"] == "SUCCESS_RESULT_RETURNED"
+    assert request_meta["auth_refresh_performed"] is True
+    assert request_meta["attempt_count"] == 2
+    assert [attempt["http_status"] for attempt in request_meta["attempts"]] == [401, 200]
+    assert manifest["authentication"]["refresh_count"] == 1
+    saved = (run_dir / "run-manifest.json").read_text(encoding="utf-8")
+    assert "old-secret" not in saved
+    assert "new-secret" not in saved
+
+
+def test_anonymous_session_uses_query2_fallback_when_query1_crumb_is_invalid():
+    calls: list[str] = []
+
+    def opener(request, timeout):
+        calls.append(request.full_url)
+        if request.full_url in {capture.YAHOO_BASIC_COOKIE_URL, capture.YAHOO_FALLBACK_COOKIE_URL}:
+            return FakeResponse(b"cookie", url=request.full_url, content_type="text/html")
+        if request.full_url == capture.YAHOO_BASIC_CRUMB_URL:
+            return FakeResponse(b"", url=request.full_url, content_type="text/plain")
+        if request.full_url == capture.YAHOO_FALLBACK_CRUMB_URL:
+            return FakeResponse(b"fallback-secret", url=request.full_url, content_type="text/plain")
+        raise AssertionError(request.full_url)
+
+    session = capture.YahooAnonymousSession(
+        user_agent="test-agent",
+        timeout_seconds=10,
+        opener=opener,
+    )
+    url = session.quote_url("AAPL", capture.DEFAULT_BASE_URL)
+    assert "crumb=fallback-secret" in url
+    assert session.strategy == "finance-query2-fallback"
+    assert calls == [
+        capture.YAHOO_BASIC_COOKIE_URL,
+        capture.YAHOO_BASIC_CRUMB_URL,
+        capture.YAHOO_FALLBACK_COOKIE_URL,
+        capture.YAHOO_FALLBACK_CRUMB_URL,
+    ]
