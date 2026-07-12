@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.4.2 — Capture Validation and Path Hardening
+
+Hardened the Quote capture utility after reviewing the first successful 16-symbol live capture.
+
+### Added
+
+- `--validate-run` for completed run folders
+- SHA-256 and response-byte-count revalidation
+- Manifest-to-sidecar equality checks
+- Request sequence, request-order, symbol, filename, and summary consistency checks
+- Missing, duplicate, unsafe, and unreferenced-file detection
+- Privacy scanning for unredacted crumbs, cookies, and authorization values
+- Known and unmapped JSON-path inventory
+- `run-validation.json` and `run-validation.txt` reports
+- Per-symbol capture progress lines
+- JSON Schema for the validation report
+- Expanded offline tests for validation and path behavior
+
+### Changed
+
+- Default capture output now always resolves to repository-root `captures/local/`.
+- Manifest input and master-database paths are now portable references rather than full local paths.
+- External input paths are reduced to filenames before being stored.
+- Windows instructions now state the expected working directory and command separately.
+
+### Live-run findings addressed
+
+- A successful 16-symbol v0.4.1 run returned HTTP 200 for all symbols.
+- All raw hashes and sidecars were internally consistent.
+- The v0.4.1 manifest exposed full local Windows paths; v0.4.2 removes that exposure.
+- The prior default output depended on the current directory; v0.4.2 fixes the destination.
+
+### Validation
+
+- Fifteen capture-utility tests pass.
+- Python byte-code compilation passes.
+- The uploaded successful v0.4.1 run passes structural, integrity, and privacy validation with only expected warnings for its two legacy absolute manifest paths.
+
 ## v0.4.1 — Anonymous Yahoo Session Support
 
 Added anonymous Yahoo cookie-and-crumb handling after the first live v0.4.0 capture returned HTTP 401 Unauthorized for all 16 symbols.

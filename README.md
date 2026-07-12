@@ -4,7 +4,7 @@ A public reference and change-tracking project for observed Yahoo Finance API be
 
 ## Current release
 
-v0.4.1 — Anonymous Yahoo Session Support
+v0.4.2 — Capture Validation and Path Hardening
 
 This project documents observed Yahoo Finance API endpoint behavior, field/schema changes, symbol coverage, market-state behavior, data timing, and data-quality anomalies over time.
 
@@ -12,21 +12,23 @@ This is not an official Yahoo Finance project. It is also not primarily an appli
 
 ## What this release adds
 
-v0.4.1 hardens the first capture utility after the initial live run showed that bare Quote requests returned HTTP 401 Unauthorized.
+v0.4.2 hardens the first working Quote capture utility after review of a successful 16-symbol live run.
 
 The utility now provides:
 
-- anonymous Yahoo cookie-and-crumb session setup using only the Python standard library;
-- one automatic session refresh after HTTP 401 or 403;
-- no persistence of cookie or crumb values;
-- redacted request URLs in public evidence;
-- a user-editable CSV table with the 16 representative symbols;
-- sequential one-symbol Quote requests, with a project maximum of 30 enabled rows;
-- byte-for-byte preservation of the final response body for each symbol;
-- UTC timing, HTTP status, content type, response size, SHA-256, sidecars, normalized text, and a run manifest.
+- a repository-root default output directory that does not depend on the current Command Prompt directory;
+- repository-relative path references in manifests, avoiding disclosure of Windows usernames and local directory layouts;
+- per-symbol progress lines during capture;
+- `--validate-run` for completed capture folders;
+- SHA-256, byte-count, sequence, symbol, manifest, sidecar, and file-set verification;
+- privacy scanning for unredacted crumb, cookie, and authorization values;
+- known and unmapped JSON-path reporting; and
+- machine-readable and human-readable validation reports.
+
+The v0.4.1 anonymous Yahoo cookie-and-crumb session remains in place. Cookie and crumb values remain in memory and are never written to capture evidence.
 
 ```text
-Anonymous session → Symbol table → Sequential Quote requests → Raw evidence + SHA-256 → Metadata + normalized text → Run manifest → Review
+Anonymous session → Sequential Quote capture → Portable evidence paths → Run validation → Review
 ```
 
 ## Important principles
@@ -37,25 +39,36 @@ A user report should still start as an observation, not immediately as a confirm
 
 ## Run the capture utility
 
+For consistency on Windows, open Command Prompt from the repository root.
+
 Validate the default table without contacting Yahoo:
 
-```bash
-python tools/capture-utility/yahoo_capture.py --dry-run
+```text
+py tools\capture-utility\yahoo_capture.py --dry-run
 ```
 
 Run a capture:
 
-```bash
-python tools/capture-utility/yahoo_capture.py
+```text
+py tools\capture-utility\yahoo_capture.py
 ```
 
-See `tools/capture-utility/README.md` for the complete command reference and output layout.
+Validate a completed run:
+
+```text
+py tools\capture-utility\yahoo_capture.py --validate-run captures\local\<run-folder>
+```
+
+The default output always resolves to the repository-root `captures/local/`, even when the command is launched from another directory.
+
+See `tools/capture-utility/README.md` for the complete command reference, Windows instructions, and output layout.
 
 ## Main files
 
-- `tools/capture-utility/yahoo_capture.py` — first working Quote evidence-capture utility
+- `tools/capture-utility/yahoo_capture.py` — Quote evidence capture and run-validation utility
 - `tools/capture-utility/symbols.csv` — user-editable representative-symbol table
-- `tests/test_capture_utility.py` — offline tests using simulated HTTP responses
+- `tests/test_capture_utility.py` — offline capture and validation tests
+- `schemas/run-validation.schema.json` — JSON Schema for `run-validation.json`
 - `data/master_field_database.csv` — observed Yahoo API field database
 - `data/review_status_categories.csv` — review status definitions
 - `data/evidence_quality_levels.csv` — evidence quality scale
@@ -65,14 +78,12 @@ See `tools/capture-utility/README.md` for the complete command reference and out
 - `data/change_promotion_gates.csv` — gates for confirmed records
 - `docs/reference/` — human-readable API reference pages
 - `docs/specifications/` — capture and normalized-output specifications
-- `templates/capture_run_manifest_template.json` — capture-run metadata template
-- `templates/reference_evidence_record_template.json` — observation evidence template
 - `.github/ISSUE_TEMPLATE/` — public report forms
 - `docs/` — project guidance and release notes
 
 ## Current utility scope
 
-v0.4.1 implements the Quote endpoint with anonymous cookie-and-crumb session support. Chart, QuoteSummary, Search, Screener, Options, comparison, scheduled capture, and workbook export remain later stages.
+v0.4.2 captures and validates the Quote endpoint with anonymous cookie-and-crumb session support. Chart, QuoteSummary, Search, Screener, Options, comparison, scheduled capture, and workbook export remain later stages.
 
 ## Public users
 
@@ -87,19 +98,6 @@ A useful report should include:
 - whether the result was from raw Yahoo access or a third-party app/tool,
 - what you expected to happen, and
 - what actually happened.
-
-## Review outcomes
-
-Reports may be classified as:
-
-- confirmed Yahoo API change,
-- needs retest,
-- needs clarification,
-- likely temporary Yahoo issue,
-- likely app-specific behavior,
-- duplicate,
-- rejected / false positive, or
-- deferred for monitoring.
 
 ## Disclaimer
 

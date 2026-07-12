@@ -16,17 +16,25 @@ Built the master field database, CSV mapping guidance, parser/result diagnostics
 
 ### v0.4.0 — First working capture utility
 
-Implement the v0.3.9 specification for sequential Quote capture with a symbol table, unchanged raw evidence, SHA-256, metadata sidecars, normalized text, retry controls, and a run manifest.
+Implemented sequential Quote capture with a symbol table, unchanged raw evidence, SHA-256, metadata sidecars, normalized text, retry controls, and a run manifest.
+
+### v0.4.1 — Anonymous Yahoo session support
+
+Added anonymous in-memory cookie-and-crumb setup, Query2 fallback, one refresh after HTTP 401/403, and secret redaction after a bare live request returned HTTP 401.
+
+### v0.4.2 — Capture validation and path hardening
+
+Added completed-run validation, hash and file-set checking, privacy scans, mapped/unmapped path reporting, portable manifest paths, fixed repository-root output, and per-symbol progress.
 
 ## Planned
 
-### v0.4.x — Capture hardening
+### v0.4.x — Additional capture hardening
 
-Add real-world capture validation, sample evidence, improved diagnostics, manifest validation, and compatibility refinements without weakening raw-evidence rules.
+Use additional real-world runs to refine diagnostics and compatibility without weakening raw-evidence or privacy rules.
 
 ### v0.5.0 — Additional endpoint families
 
-Extend structured capture to Chart, QuoteSummary, Search, Screener, Options, and other verified endpoint families.
+Extend structured capture to Chart first, followed by QuoteSummary, Search, Screener, Options, and other verified endpoint families.
 
 ### v0.6.0 — Comparison and field-discovery utilities
 
