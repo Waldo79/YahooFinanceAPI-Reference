@@ -1,0 +1,11 @@
+symbol,enabled,project_security_type,endpoint_id,notes
+^N225,yes,Index,quote,Nikkei 225 Japan market index
+7203.T,yes,Stock,quote,Toyota Motor Tokyo-listed stock
+^HSI,yes,Index,quote,Hang Seng Hong Kong market index
+0700.HK,yes,Stock,quote,Tencent Hong Kong-listed stock
+^FTSE,yes,Index,quote,FTSE 100 United Kingdom market index
+SHEL.L,yes,Stock,quote,Shell London-listed stock
+^GDAXI,yes,Index,quote,DAX Germany market index
+SAP.DE,yes,Stock,quote,SAP Xetra-listed stock
+JPY=X,yes,Foreign exchange,quote,Japanese yen foreign-exchange reference
+EURUSD=X,yes,Foreign exchange,quote,Euro US-dollar foreign-exchange reference
