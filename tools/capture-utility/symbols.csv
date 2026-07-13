@@ -4,9 +4,9 @@ MSFT,yes,Stock,quote,Representative stock
 SPY,yes,ETF,quote,Representative ETF
 QQQI,yes,ETF,quote,Representative ETF
 NAC,yes,Closed-end fund,quote,Representative California municipal CEF
+XNACX,yes,Mutual fund,quote,NAC closed-end fund end-of-day NAV companion symbol
 PDI,yes,Closed-end fund,quote,Representative taxable CEF
-XPDIX,yes,Mutual fund	quote,PDI closed-end fund end-of-day NAV companion symbol
-XNACX,yes,Mutual fund,quote,Representative mutual fund
+XPDIX,yes,Mutual fund,quote,PDI closed-end fund end-of-day NAV companion symbol
 VTSAX,yes,Mutual fund,quote,Representative mutual fund
 ZT=F,yes,Futures,quote,Representative Treasury futures contract
 CL=F,yes,Futures,quote,Representative crude-oil futures contract
