@@ -26,6 +26,10 @@ Added anonymous in-memory cookie-and-crumb setup, Query2 fallback, one refresh a
 
 Added completed-run validation, hash and file-set checking, privacy scans, mapped/unmapped path reporting, portable manifest paths, fixed repository-root output, and per-symbol progress.
 
+### v0.4.3 — Zero-pause capture baseline
+
+Set the normal inter-symbol pause to 0 milliseconds after repeated successful live stopwatch runs, while preserving explicit pacing overrides, retry delays, timeout behavior, and anonymous-session refresh safeguards.
+
 ## Planned
 
 ### v0.4.x — Additional capture hardening

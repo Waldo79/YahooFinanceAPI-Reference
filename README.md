@@ -4,31 +4,28 @@ A public reference and change-tracking project for observed Yahoo Finance API be
 
 ## Current release
 
-v0.4.2 — Capture Validation and Path Hardening
+v0.4.3 — Zero-Pause Capture Baseline
 
 This project documents observed Yahoo Finance API endpoint behavior, field/schema changes, symbol coverage, market-state behavior, data timing, and data-quality anomalies over time.
 
 This is not an official Yahoo Finance project. It is also not primarily an application-development project. Scripts, templates, validators, and workbooks are support tools for repeatable public observation and documentation.
 
-## What this release adds
+## What this release changes
 
-v0.4.2 hardens the first working Quote capture utility after review of a successful 16-symbol live run.
+v0.4.3 changes the Quote capture utility's normal inter-symbol pause from 1,000 milliseconds to 0 milliseconds after repeated successful live stopwatch tests showed that the fixed delay was unnecessary for the tested workflow.
 
-The utility now provides:
+The utility now:
 
-- a repository-root default output directory that does not depend on the current Command Prompt directory;
-- repository-relative path references in manifests, avoiding disclosure of Windows usernames and local directory layouts;
-- per-symbol progress lines during capture;
-- `--validate-run` for completed capture folders;
-- SHA-256, byte-count, sequence, symbol, manifest, sidecar, and file-set verification;
-- privacy scanning for unredacted crumb, cookie, and authorization values;
-- known and unmapped JSON-path reporting; and
-- machine-readable and human-readable validation reports.
+- sends sequential Quote requests without an added fixed delay by default;
+- keeps `--pause-ms` as an explicit pacing override;
+- preserves retry delays for HTTP 429 and retryable 5xx responses;
+- preserves the 30-second default per-attempt timeout; and
+- preserves the one-time anonymous-session refresh after HTTP 401 or 403.
 
-The v0.4.1 anonymous Yahoo cookie-and-crumb session remains in place. Cookie and crumb values remain in memory and are never written to capture evidence.
+The July 16, 2026 16-symbol stopwatch runs completed successfully in 3.82 seconds at 0 ms, 4.31 seconds at 25 ms, and 3.65 seconds when 0 ms was repeated. These observations establish the project default; they do not guarantee that Yahoo will never throttle future runs.
 
 ```text
-Anonymous session → Sequential Quote capture → Portable evidence paths → Run validation → Review
+Anonymous session → Sequential Quote capture → No added normal pause → Existing retry safeguards → Run validation
 ```
 
 ## Important principles
@@ -47,10 +44,16 @@ Validate the default table without contacting Yahoo:
 py tools\capture-utility\yahoo_capture.py --dry-run
 ```
 
-Run a capture:
+Run a capture with the v0.4.3 default of 0 ms between symbols:
 
 ```text
 py tools\capture-utility\yahoo_capture.py
+```
+
+Run with an explicit pause when desired:
+
+```text
+py tools\capture-utility\yahoo_capture.py --pause-ms 1000
 ```
 
 Validate a completed run:
@@ -61,7 +64,7 @@ py tools\capture-utility\yahoo_capture.py --validate-run captures\local\<run-fol
 
 The default output always resolves to the repository-root `captures/local/`, even when the command is launched from another directory.
 
-See `tools/capture-utility/README.md` for the complete command reference, Windows instructions, and output layout.
+See `tools/capture-utility/README.md` for the complete command reference, Windows instructions, pacing controls, and output layout.
 
 ## Main files
 
@@ -83,7 +86,7 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 
 ## Current utility scope
 
-v0.4.2 captures and validates the Quote endpoint with anonymous cookie-and-crumb session support. Chart, QuoteSummary, Search, Screener, Options, comparison, scheduled capture, and workbook export remain later stages.
+v0.4.3 captures and validates the Quote endpoint with anonymous cookie-and-crumb session support and a 0 ms normal inter-symbol pause. Chart, QuoteSummary, Search, Screener, Options, comparison, scheduled capture, and workbook export remain later stages.
 
 ## Public users
 

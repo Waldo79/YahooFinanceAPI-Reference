@@ -1,5 +1,46 @@
 # Changelog
 
+## v0.4.3 — Zero-Pause Capture Baseline
+
+Changed the Quote capture utility's normal inter-symbol pause from 1,000 milliseconds to 0 milliseconds after repeated live timing tests showed that the fixed delay was unnecessary for the tested workflow.
+
+### Changed
+
+- Added `DEFAULT_PAUSE_MS = 0` as the named normal pacing default.
+- Changed `--pause-ms` to use the zero-millisecond default.
+- Kept `--pause-ms` available as an explicit nonnegative override.
+- Updated capture documentation and release guidance for the zero-pause baseline.
+
+### Unchanged safeguards
+
+- Requests remain sequential, one symbol per Quote request.
+- HTTP 429, 500, 502, 503, and 504 continue to use the configured retry policy.
+- Default retry delays remain two and five seconds.
+- Default per-attempt timeout remains 30 seconds.
+- HTTP 401 or 403 continues to trigger at most one anonymous-session refresh for the run.
+- Raw-response preservation, hashing, metadata, normalized output, manifests, validation, and privacy rules are unchanged.
+
+### Live timing evidence
+
+- July 16, 2026: 16 symbols at 0 ms completed successfully in 3.82 seconds.
+- July 16, 2026: 16 symbols at 25 ms completed successfully in 4.31 seconds.
+- July 16, 2026: repeated 16-symbol run at 0 ms completed successfully in 3.65 seconds.
+- These observations establish the project default and are not a guarantee against future Yahoo throttling.
+
+### Related verification baseline
+
+- The completed row-by-row app verification used Global 130 and U.S. 130 symbol universes.
+- The two 130-row universes contained 23 overlaps, producing 237 unique symbols from 260 displayed assignments.
+- The final corrected symbols were `CWEN` and `INGA.AS`.
+- The 69-column output layout was accepted as the verification layout.
+- This app-verification baseline is separate from the capture utility's 30-enabled-symbol per-run limit.
+
+### Validation
+
+- Seventeen capture-utility tests pass.
+- Parser tests confirm the 0 ms default and a `--pause-ms 25` override.
+- Python byte-code compilation passes.
+
 ## v0.4.2 — Capture Validation and Path Hardening
 
 Hardened the Quote capture utility after reviewing the first successful 16-symbol live capture.
