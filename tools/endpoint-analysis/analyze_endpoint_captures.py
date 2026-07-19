@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert a validated Yahoo endpoint capture run into deterministic analysis tables.
+r"""Convert a validated Yahoo endpoint capture run into deterministic analysis tables.
 
 This is an offline analyzer. It never contacts Yahoo Finance and never modifies
 raw evidence or metadata.
@@ -12,6 +12,11 @@ Examples, from repository root:
 Analyze the newest local capture run:
 
     py tools\endpoint-analysis\analyze_endpoint_captures.py
+
+On Windows, run the unit tests with a repository-local temporary directory:
+
+    rmdir /s /q .pytest-temp 2>nul
+    py -m pytest -q tests\test_endpoint_analysis.py --basetemp=".pytest-temp"
 
 Generated files are written to the run's ``analysis`` directory unless
 ``--output-dir`` is supplied.
@@ -32,7 +37,7 @@ from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import parse_qsl, urlsplit
 
-ANALYZER_VERSION = "0.1.0"
+ANALYZER_VERSION = "0.1.1"
 ANALYSIS_SCHEMA_VERSION = "0.5.0"
 
 ENDPOINT_ORDER = (
