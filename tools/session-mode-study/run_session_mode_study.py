@@ -42,7 +42,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from urllib.request import HTTPCookieProcessor, Request, build_opener
 
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 STUDY_SCHEMA_VERSION = "0.5.0"
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -82,6 +82,7 @@ MODE_RESULTS_COLUMNS = [
     "content_type",
     "response_bytes",
     "raw_response_sha256",
+    "canonical_json_sha256",
     "parse_status",
     "result_classification",
     "expected_top_level",
@@ -113,6 +114,7 @@ ENDPOINT_SUMMARY_COLUMNS = [
     "all_modes_received_http_response",
     "all_modes_expected_top_level",
     "response_hashes_equal",
+    "canonical_json_hashes_equal",
     "response_sizes_equal",
     "review_note",
 ]
@@ -583,6 +585,8 @@ def capture_one(
     result_classification = "HTTP_OR_NETWORK_ERROR"
     expected_top_level_found = False
     parse_error = None
+    parsed: Any = None
+    canonical_json_sha256: str | None = None
 
     if body:
         try:
@@ -592,6 +596,7 @@ def capture_one(
             parse_error = f"{type(exc).__name__}: {exc}"
         else:
             parse_status = "VALID_JSON"
+            canonical_json_sha256 = sha256_json(parsed)
             result_classification, expected_top_level_found = classify_json(
                 parsed, planned.request.expected_top_level
             )
@@ -633,6 +638,7 @@ def capture_one(
         "content_type": content_type,
         "response_bytes": len(body),
         "raw_response_sha256": sha256_bytes(body),
+        "canonical_json_sha256": canonical_json_sha256,
         "parse_status": parse_status,
         "parse_error": parse_error,
         "result_classification": result_classification,
@@ -677,6 +683,7 @@ def build_endpoint_summaries(
         statuses = [row["http_status"] for row in mode_rows.values()]
         classifications = [row["result_classification"] for row in mode_rows.values()]
         hashes = [row["raw_response_sha256"] for row in mode_rows.values()]
+        canonical_hashes = [row.get("canonical_json_sha256") for row in mode_rows.values()]
         sizes = [row["response_bytes"] for row in mode_rows.values()]
         expected_flags = [bool(row["expected_top_level_found"]) for row in mode_rows.values()]
         successful_mode_count = sum(expected_flags)
@@ -705,11 +712,46 @@ def build_endpoint_summaries(
                 "all_modes_received_http_response": all(status is not None for status in statuses),
                 "all_modes_expected_top_level": all(expected_flags),
                 "response_hashes_equal": len(set(hashes)) == 1,
+                "canonical_json_hashes_equal": (
+                    all(canonical_hashes) and len(set(canonical_hashes)) == 1
+                ),
                 "response_sizes_equal": len(set(sizes)) == 1,
                 "review_note": note,
             }
         )
     return summaries
+
+
+def portable_source_path(definition_path: Path) -> str:
+    resolved = definition_path.expanduser().resolve()
+    try:
+        return resolved.relative_to(REPOSITORY_ROOT.resolve()).as_posix()
+    except ValueError:
+        return resolved.name
+
+
+def build_resolved_study_definition(
+    definition: dict[str, Any],
+    modes: list[ModeDefinition],
+    requests: list[RequestDefinition],
+    *,
+    run_started_at_utc: str,
+) -> dict[str, Any]:
+    return {
+        "study_schema_version": STUDY_SCHEMA_VERSION,
+        "tool_version": TOOL_VERSION,
+        "study_id": definition["study_id"],
+        "study_version": definition["study_version"],
+        "study_title": definition["study_title"],
+        "study_variable": definition["study_variable"],
+        "subject": definition["subject"],
+        "resolved_at_utc": run_started_at_utc,
+        "request_order": "endpoint-major, then configured session-mode order",
+        "mode_order": [mode.session_mode for mode in modes],
+        "modes": [asdict(mode) for mode in modes],
+        "requests": [asdict(request) for request in requests],
+        "sensitive_values_persisted": False,
+    }
 
 
 def run_study(
@@ -734,6 +776,17 @@ def run_study(
 
     for relative in ("raw", "metadata", "errors", "comparison"):
         (run_dir / relative).mkdir(parents=True, exist_ok=True)
+
+    resolved_definition = build_resolved_study_definition(
+        definition,
+        modes,
+        requests,
+        run_started_at_utc=format_utc(run_started),
+    )
+    resolved_definition_relative = "study-definition.resolved.json"
+    resolved_definition_path = run_dir / resolved_definition_relative
+    write_json(resolved_definition_path, resolved_definition)
+    resolved_definition_bytes = resolved_definition_path.read_bytes()
 
     plan = build_execution_plan(definition, modes, requests, run_id=run_id)
 
@@ -823,8 +876,10 @@ def run_study(
         "study_version": definition["study_version"],
         "study_title": definition["study_title"],
         "study_variable": definition["study_variable"],
-        "study_definition_file": str(definition_path),
-        "study_definition_sha256": sha256_bytes(definition_bytes),
+        "study_definition_file": resolved_definition_relative,
+        "study_definition_sha256": sha256_bytes(resolved_definition_bytes),
+        "study_definition_source_file": portable_source_path(definition_path),
+        "study_definition_source_sha256": sha256_bytes(definition_bytes),
         "run_started_at_utc": format_utc(run_started),
         "run_completed_at_utc": format_utc(run_completed),
         "default_pause_ms": pause_ms,
@@ -947,6 +1002,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Evidence records: {summary['evidence_record_count']}/{summary['planned_request_count']}")
     print(f"HTTP responses: {summary['http_response_count']}")
     print(f"Expected top levels found: {summary['expected_top_level_found_count']}")
+    print("Resolved definition: study-definition.resolved.json")
     print("Session-mode results: comparison\\session-mode-results.csv")
     print("Endpoint summary: comparison\\endpoint-session-summary.csv")
 

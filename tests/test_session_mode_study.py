@@ -220,6 +220,7 @@ def test_cookie_crumb_sends_secret_but_metadata_redacts_it():
     assert "secret" not in json.dumps(metadata)
     assert "crumb=REDACTED" in metadata["request_url_redacted"]
     assert metadata["crumb_sent"] is True
+    assert metadata["canonical_json_sha256"] == study.sha256_json(json.loads(body))
 
 
 def test_cookie_only_prepares_but_does_not_send_crumb():
@@ -331,6 +332,16 @@ def test_full_synthetic_run_writes_21_compatible_evidence_records(tmp_path: Path
     assert manifest["summary"]["expected_top_level_found_count"] == 21
     assert len(manifest["requests"]) == 21
 
+    resolved_path = run_dir / "study-definition.resolved.json"
+    assert manifest["study_definition_file"] == "study-definition.resolved.json"
+    assert manifest["study_definition_source_file"] == "config/studies/study-01-session-modes.json"
+    assert resolved_path.exists()
+    assert hashlib.sha256(resolved_path.read_bytes()).hexdigest() == manifest["study_definition_sha256"]
+    resolved = json.loads(resolved_path.read_text(encoding="utf-8"))
+    assert len(resolved["requests"]) == 7
+    assert len(resolved["modes"]) == 3
+    assert all("{subject}" not in request["base_url"] for request in resolved["requests"])
+
     for request in manifest["requests"]:
         raw_path = run_dir / request["raw_response_file"]
         metadata_path = run_dir / request["metadata_file"]
@@ -338,6 +349,7 @@ def test_full_synthetic_run_writes_21_compatible_evidence_records(tmp_path: Path
         assert metadata_path.exists()
         assert hashlib.sha256(raw_path.read_bytes()).hexdigest() == request["raw_response_sha256"]
         assert len(raw_path.read_bytes()) == request["response_bytes"]
+        assert request["canonical_json_sha256"] == study.sha256_json(json.loads(raw_path.read_bytes()))
         assert json.loads(metadata_path.read_text(encoding="utf-8")) == request
 
     mode_rows = read_csv(run_dir / "comparison" / "session-mode-results.csv")
@@ -345,6 +357,7 @@ def test_full_synthetic_run_writes_21_compatible_evidence_records(tmp_path: Path
     assert len(mode_rows) == 21
     assert len(endpoint_rows) == 7
     assert all(row["successful_mode_count"] == "3" for row in endpoint_rows)
+    assert all(row["canonical_json_hashes_equal"] == "True" for row in endpoint_rows)
 
     saved_text = "\n".join(
         path.read_text(encoding="utf-8")
@@ -353,6 +366,14 @@ def test_full_synthetic_run_writes_21_compatible_evidence_records(tmp_path: Path
     )
     assert "secret/crumb" not in saved_text
     assert "new-secret" not in saved_text
+
+
+def test_canonical_json_hash_ignores_object_key_order():
+    first = {"outer": {"a": 1, "b": 2}, "items": [{"x": 1, "y": 2}]}
+    second = {"items": [{"y": 2, "x": 1}], "outer": {"b": 2, "a": 1}}
+
+    assert json.dumps(first, separators=(",", ":")) != json.dumps(second, separators=(",", ":"))
+    assert study.sha256_json(first) == study.sha256_json(second)
 
 
 def test_no_session_401_is_evidence_without_auth_refresh():

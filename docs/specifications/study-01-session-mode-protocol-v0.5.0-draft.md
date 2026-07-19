@@ -69,12 +69,23 @@ The run resolves dynamic period bounds once at study start. All three session mo
 that endpoint therefore use identical non-session parameters and the same request
 fingerprint.
 
+A portable, fully resolved copy is written inside every evidence folder:
+
+```text
+study-definition.resolved.json
+```
+
+The run manifest references this relative file and records both its SHA-256 and the
+SHA-256 of the source configuration. Owner-computer absolute paths are not used as
+the evidence reference.
+
 ## Evidence structure
 
 ```text
 captures/local/
   <UTC>_study-01-session-modes/
     run-manifest.json
+    study-definition.resolved.json
     raw/
       cookie-crumb/
       cookie-only/
@@ -106,7 +117,8 @@ Each sample records:
 - canonical non-session parameters and SHA-256 fingerprint;
 - redacted final URL;
 - HTTP status and content type;
-- response byte count and SHA-256;
+- response byte count and raw SHA-256;
+- canonical parsed-JSON SHA-256 when the body is valid JSON;
 - JSON parse status;
 - expected-top-level status;
 - classification;
@@ -120,6 +132,11 @@ Each sample records:
 
 Cookie values, crumb values, authorization values, and request headers containing
 secrets must never be written.
+
+The raw SHA-256 proves byte-for-byte evidence integrity. The canonical parsed-JSON
+SHA-256 sorts object keys before hashing and is used only to compare JSON meaning when
+Yahoo emits the same object members in a different order. Array order remains
+significant.
 
 ## Retry rules
 
@@ -185,7 +202,7 @@ The pilot is complete when:
 1. all 21 planned evidence records are written;
 2. every raw file matches its metadata byte count and SHA-256;
 3. every manifest request entry matches its metadata sidecar;
-4. the two comparison CSV files are produced;
+4. the portable resolved study definition and two comparison CSV files are produced;
 5. no cookie or crumb value is persisted;
 6. the endpoint analyzer processes all 21 samples deterministically; and
 7. findings are reviewed before any repetition or larger sampling program.
