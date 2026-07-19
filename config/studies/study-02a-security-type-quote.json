@@ -1,0 +1,142 @@
+{
+  "study_id": "study-02a-security-type-quote-baseline",
+  "study_version": "0.1.0",
+  "study_title": "Security-type Quote endpoint baseline",
+  "study_variable": "project_security_type",
+  "session_mode": "cookie-crumb",
+  "request_order": "configured subject order",
+  "endpoint": {
+    "endpoint_id": "quote",
+    "method": "GET",
+    "base_url": "https://query1.finance.yahoo.com/v7/finance/quote",
+    "params": {
+      "symbols": "{symbol}",
+      "formatted": "false",
+      "lang": "en-US",
+      "region": "US"
+    },
+    "expected_top_level": "quoteResponse"
+  },
+  "subjects": [
+    {
+      "subject_id": "common-stock",
+      "symbol": "AAPL",
+      "name": "Apple Inc.",
+      "project_security_type": "Common Stock",
+      "expected_quote_type": "EQUITY",
+      "expected_exchange": "Nasdaq",
+      "selection_role": "Study 01 continuity control and large-cap common stock",
+      "source_inventory": "Reviewed U.S. market-structure universe"
+    },
+    {
+      "subject_id": "reit",
+      "symbol": "PSA",
+      "name": "Public Storage",
+      "project_security_type": "REIT",
+      "expected_quote_type": "EQUITY",
+      "expected_exchange": "NYSE",
+      "selection_role": "Equity-classified real-estate investment trust",
+      "source_inventory": "Reviewed U.S. market-structure universe"
+    },
+    {
+      "subject_id": "mlp-special-equity",
+      "symbol": "PAA",
+      "name": "Plains All American Pipeline, L.P.",
+      "project_security_type": "MLP / Special Equity",
+      "expected_quote_type": "EQUITY",
+      "expected_exchange": "Nasdaq",
+      "selection_role": "Partnership and special-structure equity",
+      "source_inventory": "Reviewed U.S. market-structure universe"
+    },
+    {
+      "subject_id": "special-share-class",
+      "symbol": "BRK-B",
+      "name": "Berkshire Hathaway Inc. Class B",
+      "project_security_type": "Special Share Class",
+      "expected_quote_type": "EQUITY",
+      "expected_exchange": "NYSE",
+      "selection_role": "Hyphenated U.S. share-class symbol",
+      "source_inventory": "Reviewed U.S. market-structure universe"
+    },
+    {
+      "subject_id": "broad-market-etf",
+      "symbol": "SPY",
+      "name": "SPDR S&P 500 ETF Trust",
+      "project_security_type": "Broad-Market ETF",
+      "expected_quote_type": "ETF",
+      "expected_exchange": "NYSE Arca",
+      "selection_role": "Large liquid equity ETF",
+      "source_inventory": "Reviewed U.S. market-structure universe"
+    },
+    {
+      "subject_id": "bond-etf",
+      "symbol": "SHY",
+      "name": "iShares 1-3 Year Treasury Bond ETF",
+      "project_security_type": "Bond ETF",
+      "expected_quote_type": "ETF",
+      "expected_exchange": "Nasdaq / Cboe",
+      "selection_role": "Short-duration Treasury-bond ETF",
+      "source_inventory": "Reviewed U.S. market-structure universe"
+    },
+    {
+      "subject_id": "closed-end-fund",
+      "symbol": "PDI",
+      "name": "PIMCO Dynamic Income Fund",
+      "project_security_type": "Closed-End Fund",
+      "expected_quote_type": "EQUITY",
+      "expected_exchange": "NYSE",
+      "selection_role": "Fund-like exchange-traded equity",
+      "source_inventory": "Reviewed legacy/global overlap panel"
+    },
+    {
+      "subject_id": "mutual-fund",
+      "symbol": "VTSAX",
+      "name": "Vanguard Total Stock Market Index Fund Admiral Shares",
+      "project_security_type": "Mutual Fund",
+      "expected_quote_type": "MUTUALFUND",
+      "expected_exchange": "Mutual-fund feed",
+      "selection_role": "Daily NAV-style mutual fund",
+      "source_inventory": "Reviewed legacy/global overlap panel"
+    },
+    {
+      "subject_id": "market-index",
+      "symbol": "^GSPC",
+      "name": "S&P 500",
+      "project_security_type": "Market Index",
+      "expected_quote_type": "INDEX",
+      "expected_exchange": "Index feed",
+      "selection_role": "Caret-bearing broad market index",
+      "source_inventory": "Reviewed legacy/global overlap panel"
+    },
+    {
+      "subject_id": "currency-pair",
+      "symbol": "EURUSD=X",
+      "name": "EUR/USD",
+      "project_security_type": "Currency Pair",
+      "expected_quote_type": "CURRENCY",
+      "expected_exchange": "FX feed",
+      "selection_role": "Equals-sign foreign-exchange symbol",
+      "source_inventory": "Reviewed legacy panel"
+    },
+    {
+      "subject_id": "cryptocurrency",
+      "symbol": "BTC-USD",
+      "name": "Bitcoin USD",
+      "project_security_type": "Cryptocurrency",
+      "expected_quote_type": "CRYPTOCURRENCY",
+      "expected_exchange": "Crypto feed",
+      "selection_role": "Twenty-four-hour cryptocurrency market",
+      "source_inventory": "Reviewed legacy panel"
+    },
+    {
+      "subject_id": "futures-contract",
+      "symbol": "CL=F",
+      "name": "Crude Oil Futures",
+      "project_security_type": "Futures Contract",
+      "expected_quote_type": "FUTURE",
+      "expected_exchange": "NYMEX / futures feed",
+      "selection_role": "Equals-sign commodity futures contract",
+      "source_inventory": "Reviewed U.S. and legacy panels"
+    }
+  ]
+}
