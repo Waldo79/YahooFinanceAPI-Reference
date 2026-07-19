@@ -372,6 +372,17 @@ def test_default_output_is_repository_root_relative():
     assert capture.DEFAULT_OUTDIR.is_absolute()
 
 
+def test_default_pause_is_zero():
+    args = capture.build_parser().parse_args([])
+    assert capture.DEFAULT_PAUSE_MS == 0
+    assert args.pause_ms == 0
+
+
+def test_pause_override_is_preserved():
+    args = capture.build_parser().parse_args(["--pause-ms", "25"])
+    assert args.pause_ms == 25
+
+
 def test_manifest_paths_are_portable_and_do_not_expose_external_directories(tmp_path: Path):
     run_dir, manifest, master, repository_root = make_valid_run(tmp_path)
     assert manifest["input_file"] == "tools/capture-utility/symbols.csv"
