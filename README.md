@@ -6,11 +6,46 @@ A public reference and change-tracking project for observed Yahoo Finance API be
 
 v0.4.3 — Zero-Pause Capture Baseline
 
+## Current development
+
+v0.5.0-draft — Seven-Endpoint Capture and Comparative Studies
+
+The v0.5.0 work is active development and is **not yet a formal release**. The current
+development line expands the project from the Quote capture baseline into controlled
+observation and comparison across seven Yahoo Finance endpoint families:
+
+- Quote
+- Chart
+- QuoteSummary
+- Search
+- Screener
+- Fundamentals Timeseries
+- Options
+
+Completed v0.5.0-draft work includes:
+
+- the seven-endpoint capture and analysis architecture;
+- live endpoint and session-mode verification;
+- the reusable endpoint-capture analyzer;
+- Study 01 — Session Modes, including repeat confirmation and hardened evidence;
+- Study 02A — Security-Type Quote Baseline, including live validation; and
+- portable resolved study definitions, canonical JSON hashes, comparison tables, and
+  secret-redaction checks.
+
+The formal release remains v0.4.3 until the broader v0.5.0 implementation and release
+documentation are complete.
+
+```text
+Formal release:       v0.4.3
+Development line:     v0.5.0-draft
+Completed studies:    Study 01 and Study 02A
+```
+
 This project documents observed Yahoo Finance API endpoint behavior, field/schema changes, symbol coverage, market-state behavior, data timing, and data-quality anomalies over time.
 
 This is not an official Yahoo Finance project. It is also not primarily an application-development project. Scripts, templates, validators, and workbooks are support tools for repeatable public observation and documentation.
 
-## What this release changes
+## What the current release changes
 
 v0.4.3 changes the Quote capture utility's normal inter-symbol pause from 1,000 milliseconds to 0 milliseconds after repeated successful live stopwatch tests showed that the fixed delay was unnecessary for the tested workflow.
 
@@ -66,11 +101,25 @@ The default output always resolves to the repository-root `captures/local/`, eve
 
 See `tools/capture-utility/README.md` for the complete command reference, Windows instructions, pacing controls, and output layout.
 
+## v0.5.0-draft study documentation
+
+- `docs/specifications/seven-endpoint-capture-analysis-architecture-v0.5.0-draft.md`
+- `docs/specifications/seven-endpoint-live-verification-matrix-v0.5.0.md`
+- `docs/specifications/study-01-session-mode-protocol-v0.5.0-draft.md`
+- `docs/verification/study-01-session-mode-validation-2026-07-19.md`
+- `docs/specifications/study-02a-security-type-quote-protocol-v0.5.0-draft.md`
+- `docs/verification/study-02a-security-type-quote-validation-2026-07-19.md`
+
 ## Main files
 
 - `tools/capture-utility/yahoo_capture.py` — Quote evidence capture and run-validation utility
 - `tools/capture-utility/symbols.csv` — user-editable representative-symbol table
+- `tools/endpoint-analysis/analyze_endpoint_captures.py` — deterministic endpoint-capture analyzer
+- `tools/session-mode-study/run_session_mode_study.py` — Study 01 capture tool
+- `tools/security-type-study/run_security_type_quote_study.py` — Study 02A capture tool
 - `tests/test_capture_utility.py` — offline capture and validation tests
+- `tests/test_session_mode_study.py` — Study 01 tests
+- `tests/test_security_type_quote_study.py` — Study 02A tests
 - `schemas/run-validation.schema.json` — JSON Schema for `run-validation.json`
 - `data/master_field_database.csv` — observed Yahoo API field database
 - `data/review_status_categories.csv` — review status definitions
@@ -78,30 +127,3 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 - `data/change_classification_rules.csv` — change type rules
 - `data/false_positive_checks.csv` — checks before confirming a change
 - `data/retest_workflow.csv` — repeat-test process
-- `data/change_promotion_gates.csv` — gates for confirmed records
-- `docs/reference/` — human-readable API reference pages
-- `docs/specifications/` — capture and normalized-output specifications
-- `.github/ISSUE_TEMPLATE/` — public report forms
-- `docs/` — project guidance and release notes
-
-## Current utility scope
-
-v0.4.3 captures and validates the Quote endpoint with anonymous cookie-and-crumb session support and a 0 ms normal inter-symbol pause. Chart, QuoteSummary, Search, Screener, Options, comparison, scheduled capture, and workbook export remain later stages.
-
-## Public users
-
-You do not need to be a programmer to contribute.
-
-A useful report should include:
-
-- the symbol or endpoint tested,
-- date and time of the observation,
-- market state if known,
-- exact output, log, screenshot, or raw JSON if available,
-- whether the result was from raw Yahoo access or a third-party app/tool,
-- what you expected to happen, and
-- what actually happened.
-
-## Disclaimer
-
-Yahoo Finance is a third-party service. Observed behavior may change without notice. This project is a public reference and tracking effort, not an official specification.
