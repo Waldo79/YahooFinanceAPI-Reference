@@ -15,6 +15,11 @@ The default study performs:
 The rounds are spaced 15 minutes apart over 26 hours. The study preserves every exact
 returned state string, including duplicated tokens such as `PREPRE` and `POSTPOST`.
 
+For Windows portability, observation-local timestamps are derived from Yahoo's returned
+`gmtOffSetMilliseconds` value. The configured IANA time-zone name remains an expected
+exchange label, but the capture tool does not require a host-installed IANA time-zone
+database or the third-party `tzdata` package.
+
 ## Research question
 
 When the endpoint, request parameters, session mode, subject panel, and capture cadence

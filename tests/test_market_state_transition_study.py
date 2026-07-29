@@ -89,6 +89,7 @@ def synthetic_capture(planned, session, *, maximum_attempts, sleep, now, clock):
         "market": "synthetic_market",
         "regularMarketPrice": 100.0 + round_index,
         "regularMarketTime": 1_800_000_000 + round_index,
+        "gmtOffSetMilliseconds": 0,
     }
     if state == "PRE":
         record.update(
@@ -230,6 +231,14 @@ def test_default_definition_and_plan_counts(tool):
     assert 105 * len(subjects) == 1365
 
 
+def test_definition_loading_does_not_require_host_timezone_database(tool):
+    definition, endpoint, subjects, sampling = tool.load_definition(CONFIG_PATH)
+    assert definition["study_id"] == "study-04-market-state-transition"
+    assert endpoint.endpoint_id == "quote"
+    assert subjects[0].expected_timezone_name == "America/New_York"
+    assert sampling.interval_minutes == 15
+
+
 def test_rejects_nonpositive_sampling(tool, tmp_path):
     data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     data["sampling"]["interval_minutes"] = 0
@@ -322,12 +331,19 @@ def test_enrich_metadata_detects_extended_fields(tool):
     enriched = tool.enrich_metadata(
         metadata,
         planned,
-        raw_record={"preMarketPrice": 1.0, "preMarketTime": 2},
+        raw_record={
+            "preMarketPrice": 1.0,
+            "preMarketTime": 2,
+            "gmtOffSetMilliseconds": -14_400_000,
+        },
         round_started_at_utc="2026-07-29T00:00:00.000Z",
     )
     assert enriched["pre_market_fields_present"] is True
     assert enriched["pre_market_field_count"] == 2
     assert enriched["post_market_fields_present"] is False
+    assert enriched["observation_local_time"] == "2026-07-28T20:00:00.000-04:00"
+    assert enriched["observation_local_time_source"] == "yahoo_gmtOffSetMilliseconds"
+    assert enriched["observation_utc_offset_milliseconds"] == -14_400_000
 
 
 def test_full_synthetic_run_writes_complete_outputs(tool, tmp_path):

@@ -31,9 +31,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterable
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION = "0.1.1"
 STUDY_SCHEMA_VERSION = "0.5.0"
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -55,6 +54,8 @@ OBSERVATION_COLUMNS = [
     "geographic_region",
     "expected_timezone_name",
     "observation_local_time",
+    "observation_local_time_source",
+    "observation_utc_offset_milliseconds",
     "expected_quote_type",
     "returned_quote_type",
     "quote_type_match",
@@ -315,13 +316,10 @@ def load_definition(path: Path) -> tuple[dict[str, Any], Any, list[Subject], Sam
             raise StudyError(f"Duplicate symbol: {subject.symbol}")
         if subject.subject_id in seen_ids:
             raise StudyError(f"Duplicate subject_id: {subject.subject_id}")
-        try:
-            ZoneInfo(subject.expected_timezone_name)
-        except ZoneInfoNotFoundError as exc:
+        if not subject.expected_timezone_name.strip():
             raise StudyError(
-                f"Unknown expected_timezone_name for {subject.symbol}: "
-                f"{subject.expected_timezone_name}"
-            ) from exc
+                f"Missing expected_timezone_name for {subject.symbol}."
+            )
         seen_symbols.add(subject.symbol)
         seen_ids.add(subject.subject_id)
         subjects.append(subject)
@@ -439,13 +437,23 @@ def enrich_metadata(
     pre_fields = present_fields(raw_record, PRE_MARKET_FIELDS)
     post_fields = present_fields(raw_record, POST_MARKET_FIELDS)
     observation_local_time = None
+    observation_local_time_source = None
+    observation_utc_offset_milliseconds = None
     try:
         requested = datetime.fromisoformat(metadata["requested_at_utc"].replace("Z", "+00:00"))
-        observation_local_time = requested.astimezone(
-            ZoneInfo(planned.subject.expected_timezone_name)
-        ).isoformat(timespec="milliseconds")
-    except Exception:
+        offset_value = (raw_record or {}).get("gmtOffSetMilliseconds")
+        if isinstance(offset_value, (int, float)) and not isinstance(offset_value, bool):
+            offset_milliseconds = int(offset_value)
+            local_timezone = timezone(timedelta(milliseconds=offset_milliseconds))
+            observation_local_time = requested.astimezone(local_timezone).isoformat(
+                timespec="milliseconds"
+            )
+            observation_local_time_source = "yahoo_gmtOffSetMilliseconds"
+            observation_utc_offset_milliseconds = offset_milliseconds
+    except (OverflowError, TypeError, ValueError):
         observation_local_time = None
+        observation_local_time_source = None
+        observation_utc_offset_milliseconds = None
 
     metadata.update(
         {
@@ -461,6 +469,8 @@ def enrich_metadata(
             "round_started_at_utc": round_started_at_utc,
             "expected_timezone_name": planned.subject.expected_timezone_name,
             "observation_local_time": observation_local_time,
+            "observation_local_time_source": observation_local_time_source,
+            "observation_utc_offset_milliseconds": observation_utc_offset_milliseconds,
             "control_role": planned.subject.control_role,
             "market_state_exact": selected.get("marketState"),
             "pre_market_fields_present": bool(pre_fields),
@@ -512,6 +522,10 @@ def observation_row(metadata: dict[str, Any]) -> dict[str, Any]:
         "geographic_region": metadata["geographic_region"],
         "expected_timezone_name": metadata["expected_timezone_name"],
         "observation_local_time": metadata.get("observation_local_time"),
+        "observation_local_time_source": metadata.get("observation_local_time_source"),
+        "observation_utc_offset_milliseconds": metadata.get(
+            "observation_utc_offset_milliseconds"
+        ),
         "expected_quote_type": metadata["expected_quote_type"],
         "returned_quote_type": metadata.get("returned_quote_type"),
         "quote_type_match": metadata.get("quote_type_match"),
