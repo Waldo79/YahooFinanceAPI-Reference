@@ -29,7 +29,8 @@ Completed v0.5.0-draft work includes:
 - the reusable endpoint-capture analyzer;
 - Study 01 — Session Modes, including repeat confirmation and hardened evidence;
 - Study 02A — Security-Type Quote Baseline, including live validation;
-- Study 02B — Security-Type Replication, including 24-symbol live validation; and
+- Study 02B — Security-Type Replication, including 24-symbol live validation;
+- Study 03 — International Exchange and Region Baseline, including 12-market live validation; and
 - portable resolved study definitions, canonical JSON hashes, comparison tables, and
   secret-redaction checks.
 
@@ -39,7 +40,7 @@ documentation are complete.
 ```text
 Formal release:       v0.4.3
 Development line:     v0.5.0-draft
-Completed studies:    Study 01, Study 02A, and Study 02B
+Completed studies:    Study 01, Study 02A, Study 02B, and Study 03
 ```
 
 This project documents observed Yahoo Finance API endpoint behavior, field/schema changes, symbol coverage, market-state behavior, data timing, and data-quality anomalies over time.
@@ -112,6 +113,8 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 - `docs/verification/study-02a-security-type-quote-validation-2026-07-19.md`
 - `docs/specifications/study-02b-security-type-replication-protocol-v0.5.0-draft.md`
 - `docs/verification/study-02b-security-type-replication-validation-2026-07-28.md`
+- `docs/specifications/study-03-international-exchange-region-protocol-v0.5.0-draft.md`
+- `docs/verification/study-03-international-exchange-region-validation-2026-07-28.md`
 
 ## Main files
 
@@ -121,10 +124,12 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 - `tools/session-mode-study/run_session_mode_study.py` — Study 01 capture tool
 - `tools/security-type-study/run_security_type_quote_study.py` — Study 02A capture tool
 - `tools/security-type-study/run_security_type_replication_study.py` — Study 02B capture tool
+- `tools/exchange-region-study/run_exchange_region_quote_study.py` — Study 03 capture tool
 - `tests/test_capture_utility.py` — offline capture and validation tests
 - `tests/test_session_mode_study.py` — Study 01 tests
 - `tests/test_security_type_quote_study.py` — Study 02A tests
 - `tests/test_security_type_replication_study.py` — Study 02B tests
+- `tests/test_exchange_region_quote_study.py` — Study 03 tests
 - `schemas/run-validation.schema.json` — JSON Schema for `run-validation.json`
 - `data/master_field_database.csv` — observed Yahoo API field database
 - `data/review_status_categories.csv` — review status definitions
