@@ -1,5 +1,49 @@
 # Changelog
 
+## v0.5.0-draft — Study 04 Market-State Transition Validation
+
+Completed and validated the 26-hour Study 04 interval capture across the Study 03
+international equity panel plus the `BTC-USD` continuous-market control.
+
+### Added
+
+- `docs/verification/study-04-market-state-transition-validation-2026-07-30.md`
+- Compact published Study 04 comparison tables:
+  - `data/study-04-market-state-transition-2026-07-29/market-state-summary.csv`
+  - `data/study-04-market-state-transition-2026-07-29/market-state-transitions.csv`
+  - `data/study-04-market-state-transition-2026-07-29/symbol-transition-summary.csv`
+- README and roadmap references for the completed Study 04 validation.
+
+### Live validation
+
+- Completed `105/105` rounds and `1,365/1,365` planned requests.
+- Received HTTP 200 and the requested symbol for all 1,365 observations.
+- Matched the expected `quoteType` for all 1,365 observations.
+- Recorded 50 exact `marketState` transitions across 13 subjects.
+- Observed all five targeted exact values: `PREPRE`, `PRE`, `REGULAR`, `POST`, and
+  `POSTPOST`.
+- Recorded zero retries, authentication refreshes, parse errors, missing records, or
+  persisted sensitive values.
+- Passed ZIP CRC, raw-byte, raw SHA-256, canonical-JSON SHA-256, manifest, sidecar,
+  resolved-definition, identity, timing, and command-window reconciliation checks.
+
+### Findings
+
+- `AAPL` supplied the complete reference sequence
+  `POSTPOST → PREPRE → PRE → REGULAR → POST → POSTPOST`.
+- Extended-hours field presence is not equivalent to `marketState`; only `AAPL`
+  returned the configured pre-market or post-market field groups.
+- AAPL post-market fields persisted through `POSTPOST` and into the following
+  `PREPRE` period, so applications must evaluate both the field timestamp and
+  `marketState`.
+- `BTC-USD` remained `REGULAR` for all 105 observations as the continuous-market
+  control.
+
+### Repository scope
+
+The raw responses, metadata sidecars, complete observation table, local validation
+files, command-window transcript, and capture ZIP remain outside version control.
+
 ## v0.4.3 — Zero-Pause Capture Baseline
 
 Changed the Quote capture utility's normal inter-symbol pause from 1,000 milliseconds to 0 milliseconds after repeated live timing tests showed that the fixed delay was unnecessary for the tested workflow.

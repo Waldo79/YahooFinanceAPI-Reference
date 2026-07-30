@@ -1,0 +1,14 @@
+symbol,name,country_or_market,observation_count,first_observed_at_utc,last_observed_at_utc,distinct_market_state_count,market_states_json,ordered_state_sequence_json,transition_count,pre_market_field_observation_count,post_market_field_observation_count
+0700.HK,Tencent Holdings Limited,Hong Kong,105,2026-07-29T00:52:56.418Z,2026-07-30T02:52:54.935Z,4,"[""POSTPOST"",""PRE"",""PREPRE"",""REGULAR""]","[""PREPRE"",""PRE"",""REGULAR"",""POSTPOST"",""PREPRE"",""PRE"",""REGULAR""]",6,0,0
+7203.T,Toyota Motor Corporation,Japan,105,2026-07-29T00:52:56.265Z,2026-07-30T02:52:54.798Z,3,"[""POSTPOST"",""PREPRE"",""REGULAR""]","[""REGULAR"",""POSTPOST"",""PREPRE"",""REGULAR""]",3,0,0
+AAPL,Apple Inc.,United States,105,2026-07-29T00:52:55.247Z,2026-07-30T02:52:53.788Z,5,"[""POST"",""POSTPOST"",""PRE"",""PREPRE"",""REGULAR""]","[""POSTPOST"",""PREPRE"",""PRE"",""REGULAR"",""POST"",""POSTPOST""]",5,22,57
+AIR.PA,Airbus SE,France,105,2026-07-29T00:52:55.980Z,2026-07-30T02:52:54.523Z,3,"[""POSTPOST"",""PREPRE"",""REGULAR""]","[""PREPRE"",""REGULAR"",""POSTPOST"",""PREPRE""]",3,0,0
+BHP.AX,BHP Group Limited,Australia,105,2026-07-29T00:52:56.576Z,2026-07-30T02:52:55.079Z,4,"[""POSTPOST"",""PRE"",""PREPRE"",""REGULAR""]","[""REGULAR"",""POSTPOST"",""PREPRE"",""PRE"",""REGULAR""]",4,0,0
+BTC-USD,Bitcoin USD,Cryptocurrency,105,2026-07-29T00:52:57.018Z,2026-07-30T02:52:55.561Z,1,"[""REGULAR""]","[""REGULAR""]",0,0,0
+HSBA.L,HSBC Holdings plc,United Kingdom,105,2026-07-29T00:52:55.548Z,2026-07-30T02:52:54.088Z,5,"[""POST"",""POSTPOST"",""PRE"",""PREPRE"",""REGULAR""]","[""PREPRE"",""PRE"",""REGULAR"",""POST"",""POSTPOST"",""PREPRE""]",5,0,0
+INGA.AS,ING Groep N.V.,Netherlands,105,2026-07-29T00:52:55.692Z,2026-07-30T02:52:54.241Z,3,"[""POSTPOST"",""PREPRE"",""REGULAR""]","[""PREPRE"",""REGULAR"",""POSTPOST"",""PREPRE""]",3,0,0
+NESN.SW,Nestlé S.A.,Switzerland,105,2026-07-29T00:52:56.114Z,2026-07-30T02:52:54.655Z,3,"[""POSTPOST"",""PREPRE"",""REGULAR""]","[""PREPRE"",""REGULAR"",""POSTPOST"",""PREPRE""]",3,0,0
+RELIANCE.NS,Reliance Industries Limited,India,105,2026-07-29T00:52:56.877Z,2026-07-30T02:52:55.361Z,3,"[""POSTPOST"",""PREPRE"",""REGULAR""]","[""PREPRE"",""REGULAR"",""POSTPOST"",""PREPRE""]",3,0,0
+RY.TO,Royal Bank of Canada,Canada,105,2026-07-29T00:52:55.401Z,2026-07-30T02:52:53.954Z,5,"[""POST"",""POSTPOST"",""PRE"",""PREPRE"",""REGULAR""]","[""POSTPOST"",""PREPRE"",""PRE"",""REGULAR"",""POST"",""POSTPOST""]",5,0,0
+SAP.DE,SAP SE,Germany,105,2026-07-29T00:52:55.837Z,2026-07-30T02:52:54.377Z,5,"[""POST"",""POSTPOST"",""PRE"",""PREPRE"",""REGULAR""]","[""PREPRE"",""PRE"",""REGULAR"",""POST"",""POSTPOST"",""PREPRE""]",5,0,0
+VALE3.SA,Vale S.A.,Brazil,105,2026-07-29T00:52:56.730Z,2026-07-30T02:52:55.223Z,5,"[""POST"",""POSTPOST"",""PRE"",""PREPRE"",""REGULAR""]","[""POSTPOST"",""PREPRE"",""PRE"",""REGULAR"",""POST"",""POSTPOST""]",5,0,0

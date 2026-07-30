@@ -30,15 +30,21 @@ Added completed-run validation, hash and file-set checking, privacy scans, mappe
 
 Set the normal inter-symbol pause to 0 milliseconds after repeated successful live stopwatch runs, while preserving explicit pacing overrides, retry delays, timeout behavior, and anonymous-session refresh safeguards.
 
+## In progress
+
+### v0.5.0-draft — Seven-endpoint capture and comparative studies
+
+The draft development line now includes the seven-endpoint architecture and analyzer,
+validated session-mode testing, security-type baseline and replication studies,
+international exchange and region validation, and the completed 26-hour Study 04
+market-state transition capture. Remaining work is to finish the broader endpoint-family
+implementation, consolidate study findings, and prepare formal release documentation.
+
 ## Planned
 
 ### v0.4.x — Additional capture hardening
 
 Use additional real-world runs to refine diagnostics and compatibility without weakening raw-evidence or privacy rules.
-
-### v0.5.0 — Additional endpoint families
-
-Extend structured capture to Chart first, followed by QuoteSummary, Search, Screener, Options, and other verified endpoint families.
 
 ### v0.6.0 — Comparison and field-discovery utilities
 
