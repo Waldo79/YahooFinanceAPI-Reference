@@ -1,0 +1,43 @@
+{
+  "study_id": "study-06-chart-repeated-day-stability",
+  "study_version": "0.1.0",
+  "study_title": "Chart endpoint repeated-day stability",
+  "study_variable": "chart_response_stability_across_trading_days",
+  "series_id": "2026-07-31_to_2026-08-04_study-06-chart-repeated-day-stability",
+  "subject": "AAPL",
+  "session_mode": "cookie-crumb",
+  "source_study_definition": "config/studies/study-05-chart-parameter-variation.json",
+  "expected_request_count": 27,
+  "controls": {
+    "reuse_study_05_variant_order": true,
+    "one_round_per_invocation": true,
+    "wait_only_within_scheduled_date": true,
+    "preserve_raw_response_bytes": true,
+    "canonical_json_hash": true,
+    "cross_day_control_round": "day-01",
+    "notes": "Normal invocations wait only until the configured time on the current scheduled date, capture one nine-request round, save progress, and exit. The computer does not need to remain running between dates."
+  },
+  "schedule": {
+    "timezone_name": "America/New_York",
+    "utc_offset": "-04:00",
+    "local_time": "15:45:00",
+    "expected_round_count": 3,
+    "rounds": [
+      {
+        "round_id": "day-01",
+        "scheduled_date": "2026-07-31",
+        "label": "Friday trading-day observation"
+      },
+      {
+        "round_id": "day-02",
+        "scheduled_date": "2026-08-03",
+        "label": "Monday trading-day observation"
+      },
+      {
+        "round_id": "day-03",
+        "scheduled_date": "2026-08-04",
+        "label": "Tuesday trading-day observation"
+      }
+    ]
+  }
+}
