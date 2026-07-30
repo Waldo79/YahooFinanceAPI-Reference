@@ -36,9 +36,10 @@ Set the normal inter-symbol pause to 0 milliseconds after repeated successful li
 
 The draft development line now includes the seven-endpoint architecture and analyzer,
 validated session-mode testing, security-type baseline and replication studies,
-international exchange and region validation, and the completed 26-hour Study 04
-market-state transition capture. Remaining work is to finish the broader endpoint-family
-implementation, consolidate study findings, and prepare formal release documentation.
+international exchange and region validation, the completed 26-hour Study 04 market-state
+transition capture, and the completed Study 05 Chart parameter-variation baseline.
+Remaining work is to continue endpoint-family parameter studies, complete repeated-day
+stability testing, consolidate findings, and prepare formal release documentation.
 
 ## Planned
 

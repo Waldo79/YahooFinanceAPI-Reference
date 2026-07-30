@@ -32,7 +32,9 @@ Completed v0.5.0-draft work includes:
 - Study 02B — Security-Type Replication, including 24-symbol live validation;
 - Study 03 — International Exchange and Region Baseline, including 12-market live validation;
 - Study 04 — Market-State Transition Study, including a validated 26-hour, 1,365-request
-  capture across 13 subjects; and
+  capture across 13 subjects;
+- Study 05 — Chart Parameter Variations, including nine validated AAPL Chart requests
+  covering range, interval, pre/post inclusion, events, and explicit period selection; and
 - portable resolved study definitions, canonical JSON hashes, comparison tables, and
   secret-redaction checks.
 
@@ -42,7 +44,7 @@ documentation are complete.
 ```text
 Formal release:       v0.4.3
 Development line:     v0.5.0-draft
-Completed studies:    Study 01, Study 02A, Study 02B, Study 03, and Study 04
+Completed studies:    Study 01, Study 02A, Study 02B, Study 03, Study 04, and Study 05
 ```
 
 This project documents observed Yahoo Finance API endpoint behavior, field/schema changes, symbol coverage, market-state behavior, data timing, and data-quality anomalies over time.
@@ -119,6 +121,8 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 - `docs/verification/study-03-international-exchange-region-validation-2026-07-28.md`
 - `docs/specifications/study-04-market-state-transition-protocol-v0.5.0-draft.md`
 - `docs/verification/study-04-market-state-transition-validation-2026-07-30.md`
+- `docs/specifications/study-05-chart-parameter-variation-protocol-v0.5.0-draft.md`
+- `docs/verification/study-05-chart-parameter-variation-validation-2026-07-30.md`
 
 ## Main files
 
@@ -130,12 +134,14 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 - `tools/security-type-study/run_security_type_replication_study.py` — Study 02B capture tool
 - `tools/exchange-region-study/run_exchange_region_quote_study.py` — Study 03 capture tool
 - `tools/market-state-study/run_market_state_transition_study.py` — Study 04 interval capture tool
+- `tools/chart-parameter-study/run_chart_parameter_variation_study.py` — Study 05 Chart parameter-variation tool
 - `tests/test_capture_utility.py` — offline capture and validation tests
 - `tests/test_session_mode_study.py` — Study 01 tests
 - `tests/test_security_type_quote_study.py` — Study 02A tests
 - `tests/test_security_type_replication_study.py` — Study 02B tests
 - `tests/test_exchange_region_quote_study.py` — Study 03 tests
 - `tests/test_market_state_transition_study.py` — Study 04 tests
+- `tests/test_chart_parameter_variation_study.py` — Study 05 tests
 - `schemas/run-validation.schema.json` — JSON Schema for `run-validation.json`
 - `data/master_field_database.csv` — observed Yahoo API field database
 - `data/review_status_categories.csv` — review status definitions

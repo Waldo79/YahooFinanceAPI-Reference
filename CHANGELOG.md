@@ -1,5 +1,46 @@
 # Changelog
 
+## v0.5.0-draft — Study 05 Chart Parameter Variation Validation
+
+Completed and validated nine controlled AAPL Chart requests varying range, interval,
+pre/post inclusion, event parameters, and explicit period selection.
+
+### Added
+
+- `docs/verification/study-05-chart-parameter-variation-validation-2026-07-30.md`
+- Compact published Study 05 comparison tables:
+  - `data/study-05-chart-parameter-variation-2026-07-30/chart-parameter-results.csv`
+  - `data/study-05-chart-parameter-variation-2026-07-30/chart-controlled-comparison.csv`
+- README and roadmap references for the completed Study 05 validation.
+
+### Live validation
+
+- Completed `9/9` planned requests.
+- Received HTTP 200, valid JSON, and the expected Chart object for all nine requests.
+- Recorded zero retries, authentication refreshes, Chart errors, or persisted sensitive values.
+- Passed `166/166` independent ZIP, raw-byte, SHA-256, manifest, sidecar,
+  resolved-definition, request-fingerprint, analyzer-output, privacy, and path-safety checks.
+- Analyzer produced 20,476 flattened field rows, 62 catalog paths, and 558 occurrence rows.
+
+### Findings
+
+- `range=1mo` with `interval=1d` returned 22 daily bars versus five for the `5d` baseline.
+- Intraday `1h`, `5m`, and `1m` requests returned 36, 389, and 1,937 bars and omitted
+  the daily `adjclose` group.
+- `includePrePost=true` at five-minute resolution returned 911 bars, a net increase of
+  522 over the regular-only five-minute request.
+- An explicit rolling five-calendar-day period returned four daily bars versus five for
+  `range=5d`.
+- The analyzer's five type-conflict rows were expected `null;number` observations for
+  incomplete intraday OHLCV bars, not incompatible schema changes.
+- No event objects occurred in the selected window, so event-parameter behavior remains
+  a targeted follow-up.
+
+### Repository scope
+
+The raw responses, metadata sidecars, analyzer detail tables, local validation files,
+command-window transcript, and capture ZIP remain outside version control.
+
 ## v0.5.0-draft — Study 04 Market-State Transition Validation
 
 Completed and validated the 26-hour Study 04 interval capture across the Study 03

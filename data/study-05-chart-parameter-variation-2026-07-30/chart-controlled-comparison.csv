@@ -1,0 +1,10 @@
+variant_id,control_variant_id,is_control_identity,timestamp_sequence_equal,timestamp_overlap_count,timestamps_only_in_variant,timestamps_only_in_baseline,meta_key_set_equal,indicator_key_set_equal,event_identity_set_equal,canonical_json_equal,response_bytes_delta,timestamp_count_delta,quote_bar_count_delta,adjclose_count_delta,event_count_delta
+baseline-5d-1d,baseline-5d-1d,True,True,5,0,0,True,True,True,True,0,0,0,0,0
+events-omitted,baseline-5d-1d,False,True,5,0,0,True,True,True,False,0,0,0,0,0
+events-div-only,baseline-5d-1d,False,True,5,0,0,True,True,True,False,0,0,0,0,0
+range-1mo-1d,baseline-5d-1d,False,False,5,17,0,True,True,True,False,1818,17,17,17,0
+interval-1h-5d,baseline-5d-1d,False,False,5,31,0,False,False,True,False,3093,31,31,-5,0
+interval-5m-5d,baseline-5d-1d,False,False,5,384,0,False,False,True,False,34342,384,384,-5,0
+include-prepost-true-5m,interval-5m-5d,False,False,388,523,1,True,True,True,False,22959,522,522,0,0
+interval-1m-5d,baseline-5d-1d,False,False,5,1932,0,False,False,True,False,170527,1932,1932,-5,0
+explicit-period-5d-1d,baseline-5d-1d,False,False,4,0,1,True,True,True,False,-114,-1,-1,-1,0
