@@ -1,0 +1,152 @@
+{
+  "study_id": "study-05-chart-parameter-variation",
+  "study_version": "0.1.0",
+  "study_title": "Chart endpoint parameter-variation baseline",
+  "study_variable": "chart_request_parameters",
+  "subject": "AAPL",
+  "session_mode": "cookie-crumb",
+  "request_order": "configured variant order",
+  "expected_request_count": 9,
+  "endpoint": {
+    "endpoint_id": "chart",
+    "method": "GET",
+    "base_url": "https://query2.finance.yahoo.com/v8/finance/chart/{symbol}",
+    "expected_top_level": "chart"
+  },
+  "controls": {
+    "baseline_variant_id": "baseline-5d-1d",
+    "preserve_raw_response_bytes": true,
+    "canonical_json_hash": true,
+    "one_variable_at_a_time_where_supported": true,
+    "notes": "The explicit-period variant intentionally changes the request selector from range to period1/period2 and is treated as a request-form control rather than a single-parameter comparison."
+  },
+  "variant_order": [
+    "baseline-5d-1d",
+    "events-omitted",
+    "events-div-only",
+    "range-1mo-1d",
+    "interval-1h-5d",
+    "interval-5m-5d",
+    "include-prepost-true-5m",
+    "interval-1m-5d",
+    "explicit-period-5d-1d"
+  ],
+  "variants": [
+    {
+      "variant_id": "baseline-5d-1d",
+      "label": "Baseline: 5d range, 1d interval",
+      "variation_group": "baseline",
+      "changed_parameter": "none",
+      "params": {
+        "range": "5d",
+        "interval": "1d",
+        "includePrePost": "false",
+        "events": "div,splits,capitalGains"
+      },
+      "control_variant_id": "baseline-5d-1d"
+    },
+    {
+      "variant_id": "events-omitted",
+      "label": "Omit events parameter",
+      "variation_group": "events",
+      "changed_parameter": "events omitted",
+      "params": {
+        "range": "5d",
+        "interval": "1d",
+        "includePrePost": "false"
+      },
+      "control_variant_id": "baseline-5d-1d"
+    },
+    {
+      "variant_id": "events-div-only",
+      "label": "Request dividend events only",
+      "variation_group": "events",
+      "changed_parameter": "events",
+      "params": {
+        "range": "5d",
+        "interval": "1d",
+        "includePrePost": "false",
+        "events": "div"
+      },
+      "control_variant_id": "baseline-5d-1d"
+    },
+    {
+      "variant_id": "range-1mo-1d",
+      "label": "Extend range to one month",
+      "variation_group": "range",
+      "changed_parameter": "range",
+      "params": {
+        "range": "1mo",
+        "interval": "1d",
+        "includePrePost": "false",
+        "events": "div,splits,capitalGains"
+      },
+      "control_variant_id": "baseline-5d-1d"
+    },
+    {
+      "variant_id": "interval-1h-5d",
+      "label": "Change interval to one hour",
+      "variation_group": "interval",
+      "changed_parameter": "interval",
+      "params": {
+        "range": "5d",
+        "interval": "1h",
+        "includePrePost": "false",
+        "events": "div,splits,capitalGains"
+      },
+      "control_variant_id": "baseline-5d-1d"
+    },
+    {
+      "variant_id": "interval-5m-5d",
+      "label": "Change interval to five minutes",
+      "variation_group": "interval",
+      "changed_parameter": "interval",
+      "params": {
+        "range": "5d",
+        "interval": "5m",
+        "includePrePost": "false",
+        "events": "div,splits,capitalGains"
+      },
+      "control_variant_id": "baseline-5d-1d"
+    },
+    {
+      "variant_id": "include-prepost-true-5m",
+      "label": "Include pre/post bars at five-minute interval",
+      "variation_group": "includePrePost",
+      "changed_parameter": "includePrePost",
+      "params": {
+        "range": "5d",
+        "interval": "5m",
+        "includePrePost": "true",
+        "events": "div,splits,capitalGains"
+      },
+      "control_variant_id": "interval-5m-5d"
+    },
+    {
+      "variant_id": "interval-1m-5d",
+      "label": "Change interval to one minute",
+      "variation_group": "interval",
+      "changed_parameter": "interval",
+      "params": {
+        "range": "5d",
+        "interval": "1m",
+        "includePrePost": "false",
+        "events": "div,splits,capitalGains"
+      },
+      "control_variant_id": "baseline-5d-1d"
+    },
+    {
+      "variant_id": "explicit-period-5d-1d",
+      "label": "Use explicit five-day period",
+      "variation_group": "request selector",
+      "changed_parameter": "range replaced by period1/period2",
+      "dynamic_period_days": 5,
+      "params": {
+        "interval": "1d",
+        "includePrePost": "false",
+        "events": "div,splits,capitalGains"
+      },
+      "control_variant_id": "baseline-5d-1d"
+    }
+  ]
+}
