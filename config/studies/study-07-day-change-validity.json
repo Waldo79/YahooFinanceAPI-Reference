@@ -1,0 +1,62 @@
+{
+  "study_id": "study-07-day-change-validity",
+  "study_version": "0.1.0",
+  "study_title": "Day percent-change validity across security types",
+  "study_variable": "regular_market_day_change_validity",
+  "session_mode": "cookie-crumb",
+  "source_subject_definition": "config/studies/study-02b-security-type-replication.json",
+  "expected_subject_count": 24,
+  "expected_request_count": 48,
+  "quote_endpoint": {
+    "endpoint_id": "quote",
+    "method": "GET",
+    "base_url": "https://query1.finance.yahoo.com/v7/finance/quote",
+    "params": {
+      "symbols": "{symbol}",
+      "formatted": "false",
+      "lang": "en-US",
+      "region": "US"
+    },
+    "expected_top_level": "quoteResponse"
+  },
+  "chart_endpoint": {
+    "endpoint_id": "chart",
+    "method": "GET",
+    "base_url": "https://query2.finance.yahoo.com/v8/finance/chart/{symbol}",
+    "params": {
+      "range": "5d",
+      "interval": "1d",
+      "includePrePost": "false",
+      "events": "div,splits,capitalGains"
+    },
+    "expected_top_level": "chart"
+  },
+  "numeric_tolerances": {
+    "price_absolute": 1e-06,
+    "change_absolute": 1e-06,
+    "percent_absolute": 1e-06,
+    "near_zero_percent_lower": -0.001,
+    "near_zero_percent_upper": 0.001,
+    "display_percent_decimals": 2
+  },
+  "volume_policy": {
+    "required_during_regular_session_for": [
+      "Common Stock",
+      "REIT",
+      "MLP / Special Equity",
+      "Special Share Class",
+      "Broad-Market ETF",
+      "Bond ETF",
+      "Closed-End Fund"
+    ],
+    "informational_for_other_types": true
+  },
+  "controls": {
+    "one_quote_and_one_chart_request_per_subject": true,
+    "chart_previous_session_reference": true,
+    "extended_hours_evaluated_separately": true,
+    "preserve_raw_response_bytes": true,
+    "canonical_json_hash": true,
+    "notes": "The central Study 07 test is whether a reported regularMarketChangePercent within -0.001% through +0.001% is accompanied by equality between regularMarketPrice and regularMarketPreviousClose. Unequal prices inside the near-zero band are retained as exceptions for explanation. Session, Chart, arithmetic, volume, and extended-hours fields diagnose the cause rather than silently converting unsupported observations to zero."
+  }
+}
