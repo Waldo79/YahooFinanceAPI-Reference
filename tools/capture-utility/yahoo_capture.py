@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Yahoo Finance evidence capture utility.
 
-v0.4.2 implements the v0.3.9 capture-format specification for the Quote
+v0.4.3 implements the v0.3.9 capture-format specification for the Quote
 endpoint, anonymous Yahoo cookie-and-crumb session handling, portable output
-paths, and validation of completed capture runs. It uses only the Python
-standard library.
+paths, validation of completed capture runs, and a zero-millisecond normal
+inter-symbol pause. It uses only the Python standard library.
 
 The utility:
 - reads up to 30 enabled symbols from a CSV table (or --symbols),
@@ -39,7 +39,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from urllib.request import HTTPCookieProcessor, Request, build_opener, urlopen
 
-UTILITY_VERSION = "0.4.2"
+UTILITY_VERSION = "0.4.3"
 CAPTURE_SCHEMA_VERSION = "0.3.9"
 VALIDATION_SCHEMA_VERSION = "0.4.2"
 DEFAULT_ENDPOINT_ID = "quote"
@@ -60,6 +60,7 @@ DEFAULT_OUTDIR = REPOSITORY_ROOT / "captures" / "local"
 VALIDATION_JSON_FILENAME = "run-validation.json"
 VALIDATION_TEXT_FILENAME = "run-validation.txt"
 MAX_SYMBOLS = 30
+DEFAULT_PAUSE_MS = 0
 RETRYABLE_HTTP_STATUSES = {429, 500, 502, 503, 504}
 AUTH_REFRESH_HTTP_STATUSES = {401, 403}
 TRUE_VALUES = {"1", "true", "yes", "y", "on", "enabled"}
@@ -1732,7 +1733,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_MASTER_FIELDS,
         help="Master field database used to order normalized fields.",
     )
-    parser.add_argument("--pause-ms", type=int, default=1000, help="Pause between symbols in milliseconds.")
+    parser.add_argument(
+        "--pause-ms",
+        type=int,
+        default=DEFAULT_PAUSE_MS,
+        help=f"Pause between symbols in milliseconds (default: {DEFAULT_PAUSE_MS}).",
+    )
     parser.add_argument("--timeout", type=float, default=30.0, help="Per-attempt request timeout in seconds.")
     parser.add_argument("--max-attempts", type=int, default=3, help="Maximum attempts per symbol, including the first.")
     parser.add_argument(

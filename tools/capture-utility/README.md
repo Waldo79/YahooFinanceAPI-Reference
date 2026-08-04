@@ -1,8 +1,8 @@
-# Yahoo Finance Capture Utility — v0.4.2
+# Yahoo Finance Capture Utility — v0.4.3
 
 This utility captures and validates evidence from the Yahoo Finance **Quote** endpoint. It uses only Python 3.10+ standard-library modules and does not require a Yahoo username or password.
 
-v0.4.2 adds portable path handling and validation of completed capture runs. The v0.4.1 anonymous, in-memory cookie-and-crumb session remains unchanged.
+v0.4.3 sets the normal inter-symbol pause to 0 milliseconds. The v0.4.2 portable path handling and completed-run validator, and the v0.4.1 anonymous in-memory cookie-and-crumb session, remain unchanged.
 
 ## Capture workflow
 
@@ -21,6 +21,8 @@ For each enabled symbol, in table order, the utility:
 ```text
 [01/16] AAPL ... HTTP 200 SUCCESS_RESULT_RETURNED
 ```
+
+Requests remain sequential. By default, v0.4.3 adds no fixed delay between completed symbols.
 
 ## Session privacy
 
@@ -61,13 +63,19 @@ Run from the repository root:
 py tools\capture-utility\yahoo_capture.py
 ```
 
+The normal v0.4.3 pacing default is:
+
+```text
+0 milliseconds between symbols
+```
+
 The default destination is fixed at repository-root:
 
 ```text
 captures\local
 ```
 
-Unlike earlier versions, this default no longer changes when the command is launched from another directory.
+The destination does not change when the command is launched from another directory.
 
 ## Input table
 
@@ -78,7 +86,7 @@ Edit `tools/capture-utility/symbols.csv`. Supported columns are:
 | `symbol` | Yes | Exact Yahoo symbol |
 | `enabled` | No | `yes/no`, `true/false`, `1/0`, or blank for enabled |
 | `project_security_type` | No | Project category such as Stock, ETF, or Index |
-| `endpoint_id` | No | Must be `quote` in v0.4.2 |
+| `endpoint_id` | No | Must be `quote` in v0.4.3 |
 | `notes` | No | User annotation copied into metadata |
 
 At most 30 rows may be enabled. Full URLs are rejected as symbols.
@@ -127,15 +135,29 @@ Validation status is:
 
 Unmapped JSON paths are informational observations. They are not automatically promoted into the master field database.
 
-## Conservative request controls
+## Request pacing and retry controls
 
-Defaults are one second between symbols, up to three attempts, retry delays of two and five seconds, and a 30-second timeout.
+The normal inter-symbol pause is 0 milliseconds. To add a fixed pause, pass any nonnegative millisecond value:
 
 ```text
-py tools\capture-utility\yahoo_capture.py --pause-ms 1500 --max-attempts 3 --backoff-seconds 3,8 --timeout 30
+py tools\capture-utility\yahoo_capture.py --pause-ms 1000
 ```
 
-Network failures and HTTP 429, 500, 502, 503, and 504 use the normal retry policy. HTTP 401 or 403 triggers at most one anonymous-session refresh for the entire run.
+A smaller explicit override also remains valid:
+
+```text
+py tools\capture-utility\yahoo_capture.py --pause-ms 25
+```
+
+The remaining defaults are up to three attempts, retry delays of two and five seconds, and a 30-second per-attempt timeout:
+
+```text
+py tools\capture-utility\yahoo_capture.py --pause-ms 0 --max-attempts 3 --backoff-seconds 2,5 --timeout 30
+```
+
+A 0 ms normal pause does not disable safeguards. Network failures and HTTP 429, 500, 502, 503, and 504 use the retry policy. HTTP 401 or 403 triggers at most one anonymous-session refresh for the entire run.
+
+The July 16, 2026 16-symbol stopwatch runs completed successfully in 3.82 seconds at 0 ms, 4.31 seconds at 25 ms, and 3.65 seconds when 0 ms was repeated. These results establish the project baseline but cannot guarantee future Yahoo behavior.
 
 ## Diagnostic unauthenticated mode
 
@@ -199,4 +221,4 @@ Validation:
 
 ## Current scope
 
-v0.4.2 captures and validates the Quote endpoint only. Chart, QuoteSummary, Search, Screener, Options, comparison utilities, and scheduled capture remain later stages.
+v0.4.3 captures and validates the Quote endpoint only. Chart, QuoteSummary, Search, Screener, Options, comparison utilities, and scheduled capture remain later stages.

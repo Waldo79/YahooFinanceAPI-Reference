@@ -7,3 +7,4 @@ __pycache__/
 Thumbs.db
 .pytest_cache/
 captures/local/
+.pytest-temp/
