@@ -1,0 +1,59 @@
+Yahoo Finance Fast-mode candidate validation
+============================================
+Candidate version: 0.5.0-candidate.2
+Validation type: Offline simulated-response validation plus candidate.1 live
+smoke-output audit
+
+Python compile check: PASS
+Candidate pytest result: 17 passed
+
+Full prepared-universe dry run
+------------------------------
+Input rows: 1547
+Unique symbols: 1537
+Duplicate controls: 10
+Quote tasks: 16
+QuoteSummary tasks: 1547
+Chart tasks: 1547
+Options tasks: 1547
+Initial total tasks: 4657
+Network requests sent: 0
+
+Smoke dry run
+-------------
+Input rows: 30
+Unique symbols: 20
+Duplicate controls: 10
+Quote tasks: 1
+QuoteSummary tasks: 30
+Chart tasks: 30
+Options tasks: 30
+Initial total tasks: 91
+Network requests sent: 0
+
+Candidate.1 live smoke audit
+----------------------------
+Tasks: 91
+Per-symbol endpoint results: 120
+HTTP 200 tasks: 91
+Retries: 0
+Raw-response bytes reported: 1120416
+Elapsed seconds: 2.962
+Review results: 0
+Privacy scan of the supplied summary, manifest, and result CSV: PASS
+
+Corrections in candidate.2
+--------------------------
+- Text summary separates network tasks from per-symbol endpoint results.
+- Only the second intentional duplicate occurrence is marked as reusing a
+  shared batched Quote result.
+- Quote-only Options result objects with no expiration dates or option sets are
+  classified as NOT_OPTIONABLE_OR_NO_CHAIN.
+
+Limitations of the uploaded smoke audit
+---------------------------------------
+The supplied smoke ZIP contained the summary, manifest, and request-result CSV,
+but not the raw response and metadata directories. Manifest structure, counts,
+file references, recorded SHA-256 formats, and privacy fields were checked.
+The actual raw bytes and hashes could not be independently recomputed from
+that three-file ZIP.

@@ -1,0 +1,81 @@
+﻿symbol,review_status,fields_with_variants,security_type_values,exchange_code_values,exchange_name_values,name_values,currency_values,app_row_count,exchange_row_count,blocking_for_fast_mode,recommended_action
+MRVL,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+INTC,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,4,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+SWKS,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+RGTI,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqCM,NASDAQ | NasdaqCM,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+LRCX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+MU,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+QCOM,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+AMD,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,4,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+KLAC,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+AVGO,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,4,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+CHTR,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+NXPI,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+TTD,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGM,NASDAQ | NasdaqGM,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+QUBT,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqCM,NASDAQ | NasdaqCM,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+PANW,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NYQ | NasdaqGS,NASDAQ | NYQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+AMAT,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+TXN,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+ADI,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+CSCO,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NMS | NasdaqGS,NASDAQ | NMS | NasdaqGS,,,5,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+CDW,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+ASML,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+^VIX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,Cboe Indices | Chicago Options,Cboe Indices | Chicago Options,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+GFS,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+KMB,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NYSE,NASDAQ | NYSE,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+QQQ,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGM,NASDAQ | NasdaqGM,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+^NDX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | Nasdaq GIDS,NASDAQ | Nasdaq GIDS,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+BIIB,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+FTNT,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NMS | NasdaqGS,NMS | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+AMGN,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,5,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+NVDA,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,5,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+QQQI,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C); Name,,NASDAQ | NasdaqGM,NASDAQ | NasdaqGM,NEOS NASDAQ-100(R) High Income ETF | NEOS Nasdaq 100 High Income ETF,,2,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+NDSN,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+JEPQ,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGM,NASDAQ | NasdaqGM,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+TROW,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+AAPL,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,5,3,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+PSKY,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+BA.L,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,LSE | London,LSE | London,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+SPY,NONBLOCKING_METADATA_VARIANT,Name,,,,SPDR S&P 500 ETF Trust | State Street SPDR S&P 500 ETF Trust,,1,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+^GSPC,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,New York | SNP,New York | SNP,,,1,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+CPB,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+STX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+TSLA,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+CMCSA,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+VFWPX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C); Name,,Nasdaq | US,Nasdaq | US,Vanguard FTSE All-World ex US Index Fund;Inst Plus | Vanguard FTSE All-World ex-US Index Fund,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+GLQ,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NYSE | NYSE American,NYSE | NYSE American,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+FBALX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | Nasdaq,NASDAQ | Nasdaq,,,1,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+VWILX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C); Name,,Nasdaq | US,Nasdaq | US,Vanguard International Growth Adm | Vanguard International Growth Fund;Admiral,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+GOOGL,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,6,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+MSFT,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,6,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+KHC,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,4,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+HON,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,4,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+GOOG,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+WMT,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NYSE | NasdaqGS,NYSE | NasdaqGS,,,5,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+ON,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+XPDIX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | Nasdaq,NASDAQ | Nasdaq,,,1,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+XNACX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | Nasdaq,NASDAQ | Nasdaq,,,1,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+EIM,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,ASE | NYSE,ASE | NYSE,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+FNMIX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | Nasdaq,NASDAQ | Nasdaq,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+NFLX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+MUA,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NYQ | NYSE,NYQ | NYSE,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+FTHRX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | Nasdaq,NASDAQ | Nasdaq,,,1,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+SB=F,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,ICE Futures | NYB,ICE Futures | NYB,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+TMUS,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+ZT=F,NONBLOCKING_METADATA_VARIANT,Name,,,,"2-Year T-Note Futures,Jun-2025 | 2-Year T-Note Futures,Jun-2026 | 2-Year T-Note Futures,Sep-2026",,3,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+^TWII,NONBLOCKING_METADATA_VARIANT,Name,,,,TSEC weighted index | TWSE Capitalization Weighted Stock Index,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+TECH,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+FRESX,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | Nasdaq,NASDAQ | Nasdaq,,,1,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+KC=F,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,ICE Futures | NYB,ICE Futures | NYB,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+META,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+LULU,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+GC=F,NONBLOCKING_METADATA_VARIANT,Name,,,,Gold Dec 26 | Gold Jun 26,,2,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+COST,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,3,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+CL=F,NONBLOCKING_METADATA_VARIANT,Name,,,,Crude Oil Apr 26 | Crude Oil Sep 26,,2,2,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+XOM,NONBLOCKING_METADATA_VARIANT,Name,,,,Exxon Mobil Corporation | ExxonMobil Holdings Corporation,,4,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+CSGP,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,2,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+2222.SR,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,Saudi | Saudi Arabia,Saudi | Saudi Arabia,,,1,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+WBD,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,4,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+CT=F,MISSING_SECURITY_TYPE,,,,,,,1,0,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+AZN,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NYSE | NasdaqGS,NYSE | NasdaqGS,,,2,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.
+AMZN,NONBLOCKING_METADATA_VARIANT,Exchange; Exchange (C),,NASDAQ | NasdaqGS,NASDAQ | NasdaqGS,,,5,1,NO,Retain symbol unchanged. Review descriptive metadata after the first high-volume capture.

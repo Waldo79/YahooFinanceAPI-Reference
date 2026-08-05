@@ -1,0 +1,69 @@
+{
+  "plan_id": "fast-mode-high-volume-v0.1",
+  "plan_date": "2026-08-04",
+  "design_status": "PREPARATION_ONLY_NOT_EXECUTABLE_BY_CAPTURE_UTILITY_V0_4_3",
+  "symbol_universe": {
+    "unique_symbol_file": "data/high-volume/fast_mode_unique_symbols_1537.csv",
+    "request_list_file": "data/high-volume/fast_mode_request_list_1547.csv",
+    "request_symbol_text_file": "data/high-volume/fast_mode_request_symbols_1547.txt",
+    "unique_symbol_count": 1537,
+    "request_row_count": 1547,
+    "intentional_duplicate_count": 10,
+    "app_source_unique_symbols": 1452,
+    "all_exchanges_unique_symbols": 243,
+    "overlap_symbols": 158,
+    "all_exchanges_added_symbols": 85
+  },
+  "fast_mode": {
+    "quote": {
+      "enabled": true,
+      "request_mode": "batched",
+      "initial_batch_size": 100,
+      "initial_concurrency": 4
+    },
+    "quoteSummary": {
+      "enabled": true,
+      "request_mode": "concurrent_single_symbol",
+      "initial_concurrency": 10,
+      "module_profile": "fast_selected_modules"
+    },
+    "chart": {
+      "enabled": true,
+      "request_mode": "concurrent_single_symbol",
+      "range": "5d",
+      "interval": "1d",
+      "initial_concurrency": 10
+    },
+    "options": {
+      "enabled": true,
+      "request_mode": "concurrent_single_symbol",
+      "expiration_policy": "nearest",
+      "initial_concurrency": 5
+    },
+    "history": {
+      "enabled": false,
+      "reason": "Long history is a separate resumable archive workload."
+    },
+    "search": {
+      "enabled": false,
+      "reason": "Discovery operation, not one request per known symbol."
+    },
+    "screener": {
+      "enabled": false,
+      "reason": "Discovery operation, not one request per known symbol."
+    }
+  },
+  "failure_policy": {
+    "symbol_unavailable": "record_and_continue",
+    "missing_from_batch": "record_then_individual_retest",
+    "http_429": "adaptive_backoff_and_reduce_concurrency",
+    "http_401_403": "refresh_session_once_then_endpoint_safe_stop",
+    "http_5xx_or_timeout": "retry_with_backoff",
+    "invalid_json": "preserve_response_and_retry_once",
+    "null_or_empty_result": "record_and_continue"
+  },
+  "privacy": {
+    "raw_app_log_included": false,
+    "authentication_values_included": false
+  }
+}

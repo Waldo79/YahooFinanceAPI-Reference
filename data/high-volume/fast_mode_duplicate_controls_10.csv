@@ -1,0 +1,11 @@
+﻿symbol,control_reason,first_request_sequence,duplicate_request_sequence,project_security_type,exchange_code,exchange_groups,name
+AAPL,US stock control,270,1538,Stock,NasdaqGS,Exchs; Global; US,Apple Inc.
+SPY,US ETF control,290,1539,ETF,NYSEArca,Global; US,State Street SPDR S&P 500 ETF Trust
+PDI,Closed-end fund control,347,1540,Stock,NYSE,Global; US,PIMCO Dynamic Income Fund
+VTSAX,Mutual fund control,1479,1541,Mutual Fund,Nasdaq,Global; US,Vanguard Morn Total Stk Mkt Idx Admiral
+^GSPC,Index and caret-character control,291,1542,Index,SNP,Global; US,S&P 500
+GC=F,Future and equals-sign control,1294,1543,Future,COMEX,Global; US,Gold Dec 26
+EURUSD=X,Currency-pair control,1463,1544,Currency,CCY,Global,EUR/USD
+BTC-USD,Cryptocurrency and hyphen control,1456,1545,Cryptocurrency,CCC,Exchs; Global,Bitcoin USD
+RY.TO,Canadian exchange-suffix control,1127,1546,Stock,Toronto,Exchs; Global,Royal Bank of Canada
+INGA.AS,European exchange-suffix control,1522,1547,Stock,Amsterdam,Exchs; Global,ING Groep N.V.

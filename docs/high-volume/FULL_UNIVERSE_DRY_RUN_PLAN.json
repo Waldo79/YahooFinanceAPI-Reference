@@ -1,0 +1,81 @@
+{
+  "utility_version": "0.5.0-candidate.2",
+  "mode": "fast-dry-run",
+  "input_file": "data/high-volume/fast_mode_request_list_1547.csv",
+  "input_rows": 1547,
+  "unique_symbols": 1537,
+  "duplicate_controls": 10,
+  "endpoints": [
+    "quote",
+    "quoteSummary",
+    "chart",
+    "options"
+  ],
+  "task_count_before_quote_retests": 4657,
+  "tasks_by_endpoint": {
+    "chart": 1547,
+    "options": 1547,
+    "quote": 16,
+    "quoteSummary": 1547
+  },
+  "settings_by_endpoint": {
+    "quote": {
+      "concurrency": 4,
+      "quote_batch_size": 100,
+      "chart_range": "5d",
+      "chart_interval": "1d",
+      "quote_summary_modules": [
+        "summaryDetail",
+        "calendarEvents",
+        "defaultKeyStatistics",
+        "summaryProfile",
+        "quoteType",
+        "financialData"
+      ]
+    },
+    "quoteSummary": {
+      "concurrency": 10,
+      "quote_batch_size": 100,
+      "chart_range": "5d",
+      "chart_interval": "1d",
+      "quote_summary_modules": [
+        "summaryDetail",
+        "calendarEvents",
+        "defaultKeyStatistics",
+        "summaryProfile",
+        "quoteType",
+        "financialData"
+      ]
+    },
+    "chart": {
+      "concurrency": 10,
+      "quote_batch_size": 100,
+      "chart_range": "5d",
+      "chart_interval": "1d",
+      "quote_summary_modules": [
+        "summaryDetail",
+        "calendarEvents",
+        "defaultKeyStatistics",
+        "summaryProfile",
+        "quoteType",
+        "financialData"
+      ]
+    },
+    "options": {
+      "concurrency": 5,
+      "quote_batch_size": 100,
+      "chart_range": "5d",
+      "chart_interval": "1d",
+      "quote_summary_modules": [
+        "summaryDetail",
+        "calendarEvents",
+        "defaultKeyStatistics",
+        "summaryProfile",
+        "quoteType",
+        "financialData"
+      ]
+    }
+  },
+  "history_included": false,
+  "network_requests_sent": 0
+}

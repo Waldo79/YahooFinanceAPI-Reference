@@ -1,0 +1,54 @@
+Fast-mode candidate.1 live smoke-run audit
+================================================
+Source files reviewed:
+- run-summary.txt
+- run-manifest.json
+- summary/request-results.csv
+
+Internal accounting
+-------------------
+- Input rows: 30
+- Unique symbols: 20
+- Intentional duplicate controls: 10
+- Network tasks: 91
+- Per-symbol endpoint result rows: 120
+- Quote tasks: 1
+- QuoteSummary tasks: 30
+- Chart tasks: 30
+- Options tasks: 30
+- HTTP 200 tasks: 91
+- Retries: 0
+- Review-classified results: 0
+- Reported raw bytes: 1120416
+- Elapsed seconds: 2.962
+- Tasks per second: 30.722
+
+Consistency checks
+------------------
+- Task sequence, task-key, endpoint, and request-result counts agree.
+- The CSV contains exactly the same 120 per-symbol results represented in the
+  manifest.
+- Every task records a raw-response path, metadata path, byte count, and
+  64-character SHA-256 value.
+- Summary raw-byte total agrees with the sum of manifest task byte counts.
+- All 20 unique symbols have results for all four endpoint families.
+- All 10 duplicate-control rows have results for all four endpoint families.
+
+Privacy checks
+--------------
+No unredacted crumb query, Cookie/Set-Cookie/Authorization header, sensitive
+JSON value, local Windows user path, or user name was found in the three
+supplied files. The manifest records all persistence flags as false and request
+URL redaction as true.
+
+Corrections required before the full run
+----------------------------------------
+1. The text summary must distinguish 91 network tasks from 120 per-symbol
+   endpoint outcomes.
+2. The candidate.1 duplicate-reuse field marks both first and second
+   occurrences. Only the second intentional occurrence should be marked.
+3. The candidate.1 Options classifier treats any nonempty result object as
+   success. A quote-only object without expiration dates or option sets should
+   be recorded as NOT_OPTIONABLE_OR_NO_CHAIN.
+
+All three corrections are implemented in v0.5.0-candidate.2.
