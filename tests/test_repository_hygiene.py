@@ -12,6 +12,7 @@ REQUIRED_IGNORE_PATTERNS = {
     ".pytest_cache/",
     ".pytest-temp/",
     "captures/local/",
+    "config/local/fast_mode_local.json",
 }
 
 
@@ -52,6 +53,8 @@ def test_generated_private_or_accidentally_nested_files_are_not_tracked() -> Non
             violations.append(f"pytest working file: {path}")
         elif path == "captures/local" or path.startswith("captures/local/"):
             violations.append(f"private local capture: {path}")
+        elif path == "config/local/fast_mode_local.json":
+            violations.append(f"machine-local capture configuration: {path}")
         elif path == "tests/tools" or path.startswith("tests/tools/"):
             violations.append(f"duplicate utility tree under tests: {path}")
         elif path == "observations/raw/observations" or path.startswith(

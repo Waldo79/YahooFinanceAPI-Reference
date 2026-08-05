@@ -1,0 +1,10 @@
+path,action,bytes,sha256,description
+.gitignore,REPLACE,141,d4e21745b40166c140287a84292cb9516bb0848371fd8dd4520cfa369b984943,Replace; ignore the machine-local Fast-mode output configuration.
+CHANGELOG_v0_5_0_candidate_3.md,ADD,2130,e7b0ef654f059b6ec7f56e0b4ee3ffcd26310d12e43cdd6446297c1aed781218,Add candidate.3 change record.
+config/local/fast_mode_local.example.json,ADD,204,fd93481cf6cf0118f530f56ca71402032d1fd7ccf7d5ee21de6d308c6138eeb0,Add tracked placeholder for ignored local storage settings.
+docs/high-volume/EXTERNAL_CAPTURE_STORAGE.md,ADD,2403,798dcbaf90b4f651eceb6bc8f384593ccfc71d44f80671d1ca66cb7a1c98f1c0,Add external-storage policy and migration instructions.
+scripts/migrate-fast-mode-captures.ps1,ADD,3335,a70d88e1ef9df9b9a2249e3ed92b6dbabc8845b179b4a9366cc169e5ee0ed6ea,Add copy-and-SHA-256-verify migration script; deletes nothing.
+tests/test_fast_capture_utility.py,REPLACE,21210,10119727f8425cd2a882e2436134e4414772e5726bad5ba85635d9e9bb846cef,Replace with candidate.3 tests including external-storage safeguards.
+tests/test_repository_hygiene.py,REPLACE,2284,186301692c71bb782c9ce6401af687e8fe9a2b6bff5be82511fb060b0942fb2c,Replace hygiene checks to require ignored local config and reject accidental tracking.
+tools/capture-utility/FAST_MODE_README.md,REPLACE,9239,45405253beb68e79fb5d52a3e86b337fc1ce3d838f0cfcc30446a9ba942418cd,Replace Fast-mode operating documentation.
+tools/capture-utility/yahoo_fast_capture.py,REPLACE,74993,dc573df7545e8bcbdbb782ae595637889e29d4adebe5bfba434c3f032b1fc655,Replace utility with external output-root resolution and repository blocking.

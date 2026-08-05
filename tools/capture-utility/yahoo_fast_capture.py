@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """High-volume Yahoo Finance capture utility candidate.
 
-Version 0.5.0-candidate.2 adds a separate Fast-mode engine without replacing
-``yahoo_capture.py``. It uses only the Python 3.10+ standard library.
+Version 0.5.0-candidate.3 adds external capture-storage safeguards to the
+separate Fast-mode engine without replacing ``yahoo_capture.py``. It uses only
+the Python 3.10+ standard library.
 
 Supported high-volume endpoint stages:
 - Quote: batched symbol requests with individual retest of batch omissions.
@@ -20,6 +21,7 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 import re
 import socket
 import sys
@@ -37,8 +39,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode, urlsplit, urlunsplit, parse_qsl
 from urllib.request import HTTPCookieProcessor, Request, build_opener, urlopen
 
-UTILITY_VERSION = "0.5.0-candidate.2"
-CAPTURE_SCHEMA_VERSION = "0.5.0-candidate.2"
+UTILITY_VERSION = "0.5.0-candidate.3"
+CAPTURE_SCHEMA_VERSION = "0.5.0-candidate.3"
 
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -58,7 +60,14 @@ OPTIONS_BASE_URL = "https://query2.finance.yahoo.com/v7/finance/options"
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INPUT_FILE = REPOSITORY_ROOT / "data" / "high-volume" / "fast_mode_request_list_1547.csv"
-DEFAULT_OUTDIR = REPOSITORY_ROOT / "captures" / "local" / "fast-mode"
+LOCAL_CONFIG_FILE = REPOSITORY_ROOT / "config" / "local" / "fast_mode_local.json"
+_DEFAULT_ARCHIVE_PARENT = (
+    REPOSITORY_ROOT.parent.parent
+    if REPOSITORY_ROOT.parent.name.casefold() == "code"
+    else REPOSITORY_ROOT.parent
+)
+DEFAULT_EXTERNAL_OUTDIR = _DEFAULT_ARCHIVE_PARENT / "Captures" / "fast-mode"
+OUTPUT_ROOT_ENVIRONMENT_VARIABLE = "YAHOO_FAST_CAPTURE_ROOT"
 
 DEFAULT_ENDPOINTS = ("quote", "quoteSummary", "chart", "options")
 VALID_ENDPOINTS = frozenset(DEFAULT_ENDPOINTS)
@@ -80,6 +89,108 @@ class FastCaptureInputError(ValueError):
 
 class YahooSessionError(RuntimeError):
     """Raised when an anonymous Yahoo cookie-and-crumb session cannot be prepared."""
+
+
+def normalize_path(path: Path, *, relative_to: Path | None = None) -> Path:
+    """Expand environment/user markers and return a non-strict absolute path."""
+    expanded = Path(os.path.expandvars(str(path))).expanduser()
+    if not expanded.is_absolute() and relative_to is not None:
+        expanded = relative_to / expanded
+    return expanded.resolve(strict=False)
+
+
+def path_is_within(path: Path, parent: Path) -> bool:
+    """Return True when *path* is equal to or contained by *parent*."""
+    try:
+        normalize_path(path).relative_to(normalize_path(parent))
+        return True
+    except ValueError:
+        return False
+
+
+def validate_external_output_root(path: Path) -> Path:
+    """Reject raw-capture destinations inside the synchronized repository."""
+    resolved = normalize_path(path)
+    if path_is_within(resolved, REPOSITORY_ROOT):
+        raise FastCaptureInputError(
+            "Fast-mode raw captures must be stored outside the synchronized repository. "
+            f"Choose an external output root instead of: {resolved}"
+        )
+    return resolved
+
+
+def load_local_output_root(config_path: Path) -> Path | None:
+    """Read the ignored local output-root configuration, when present."""
+    config_path = normalize_path(config_path)
+    if not config_path.exists():
+        return None
+    try:
+        payload = json.loads(config_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise FastCaptureInputError(f"Cannot read local Fast-mode config {config_path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise FastCaptureInputError(f"Local Fast-mode config must contain a JSON object: {config_path}")
+    value = payload.get("output_root")
+    if not isinstance(value, str) or not value.strip():
+        raise FastCaptureInputError(f"Local Fast-mode config is missing a non-empty output_root: {config_path}")
+    return normalize_path(Path(value.strip()), relative_to=config_path.parent)
+
+
+def resolve_output_root(
+    cli_output_root: Path | None,
+    *,
+    config_path: Path = LOCAL_CONFIG_FILE,
+    environment: Mapping[str, str] | None = None,
+) -> tuple[Path, str]:
+    """Resolve output storage using CLI, environment, local config, then safe default."""
+    if cli_output_root is not None:
+        return validate_external_output_root(cli_output_root), "command_line"
+    env = os.environ if environment is None else environment
+    environment_value = env.get(OUTPUT_ROOT_ENVIRONMENT_VARIABLE, "").strip()
+    if environment_value:
+        return validate_external_output_root(Path(environment_value)), "environment"
+    configured = load_local_output_root(config_path)
+    if configured is not None:
+        return validate_external_output_root(configured), "local_config"
+    return validate_external_output_root(DEFAULT_EXTERNAL_OUTDIR), "safe_default"
+
+
+def write_local_output_config(config_path: Path, output_root: Path) -> Path:
+    """Write the ignored machine-local output-root configuration."""
+    resolved_config = normalize_path(config_path)
+    resolved_output = validate_external_output_root(output_root)
+    resolved_config.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": 1,
+        "output_root": str(resolved_output),
+        "purpose": "Machine-local Fast-mode raw capture storage; do not commit this file.",
+    }
+    resolved_config.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return resolved_config
+
+
+def prepare_output_root(path: Path) -> Path:
+    """Create and write-test an external output root before network activity."""
+    resolved = validate_external_output_root(path)
+    try:
+        resolved.mkdir(parents=True, exist_ok=True)
+        probe = resolved / f".fast-mode-write-test-{os.getpid()}-{threading.get_ident()}"
+        probe.write_text("write-test\n", encoding="utf-8")
+        probe.unlink()
+    except OSError as exc:
+        raise FastCaptureInputError(f"Fast-mode output root is not writable: {resolved}: {exc}") from exc
+    return resolved
+
+
+def validate_resume_run(path: Path) -> Path:
+    """Validate that a resumable run exists outside the synchronized repository."""
+    resolved = validate_external_output_root(path)
+    if not resolved.is_dir():
+        raise FastCaptureInputError(f"Resume run folder does not exist: {resolved}")
+    checkpoint = resolved / "checkpoint.jsonl"
+    if not checkpoint.is_file():
+        raise FastCaptureInputError(f"Resume run folder has no checkpoint.jsonl: {resolved}")
+    return resolved
 
 
 @dataclass(frozen=True)
@@ -1310,6 +1421,7 @@ def write_manifest(
     completed_at: datetime,
     elapsed_seconds: float,
     resumed: bool,
+    output_root_source: str,
 ) -> dict[str, Any]:
     summary = make_summary(input_rows, task_results, elapsed_seconds)
     manifest = {
@@ -1334,6 +1446,13 @@ def write_manifest(
             "rows": [serialize_input_row(row) for row in input_rows],
         },
         "summary": summary,
+        "storage": {
+            "policy": "external_raw_capture",
+            "output_root_source": output_root_source,
+            "run_folder_name": run_dir.name,
+            "absolute_output_path_persisted": False,
+            "repository_output_allowed": False,
+        },
         "tasks": [asdict(result) for result in sorted(task_results, key=lambda item: item.task_sequence)],
         "privacy": {
             "crumb_persisted": False,
@@ -1417,6 +1536,7 @@ def run_capture(
     now: Callable[[], datetime] = utc_now,
     progress: Callable[[str], None] = print,
     resume_run: Path | None = None,
+    output_root_source: str = "function_argument",
 ) -> tuple[Path, dict[str, Any]]:
     normalized_endpoints = tuple(endpoints)
     unknown = [endpoint for endpoint in normalized_endpoints if endpoint not in VALID_ENDPOINTS]
@@ -1523,6 +1643,7 @@ def run_capture(
         completed_at=completed_at,
         elapsed_seconds=elapsed_seconds,
         resumed=resumed,
+        output_root_source=output_root_source,
     )
     return run_dir, manifest
 
@@ -1547,7 +1668,33 @@ def parse_backoff(text: str) -> tuple[float, ...]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="High-volume Yahoo Finance Fast-mode capture candidate.")
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT_FILE, help="CSV containing a symbol column.")
-    parser.add_argument("--outdir", type=Path, default=DEFAULT_OUTDIR, help="Destination for local capture runs.")
+    parser.add_argument(
+        "--output-root",
+        "--outdir",
+        dest="output_root",
+        type=Path,
+        help=(
+            "External destination for raw capture runs. --outdir remains an alias for compatibility. "
+            "Resolution order: command line, YAHOO_FAST_CAPTURE_ROOT, ignored local config, safe default."
+        ),
+    )
+    parser.add_argument(
+        "--local-config",
+        type=Path,
+        default=LOCAL_CONFIG_FILE,
+        help="Ignored machine-local JSON file that stores output_root.",
+    )
+    parser.add_argument(
+        "--configure-output-root",
+        type=Path,
+        metavar="PATH",
+        help="Write PATH to the ignored local config and exit without network access.",
+    )
+    parser.add_argument(
+        "--show-output-root",
+        action="store_true",
+        help="Display the resolved external output root and exit without network access.",
+    )
     parser.add_argument(
         "--endpoints",
         default=",".join(DEFAULT_ENDPOINTS),
@@ -1575,6 +1722,32 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
+        if args.configure_output_root is not None:
+            config_path = write_local_output_config(args.local_config, args.configure_output_root)
+            configured_root = load_local_output_root(config_path)
+            assert configured_root is not None
+            print(f"Local Fast-mode config: {config_path}")
+            print(f"Capture output root: {configured_root}")
+            print("Storage policy: external raw captures; synchronized repository output is blocked.")
+            return 0
+
+        resume_run: Path | None = None
+        if args.resume_run is not None:
+            resume_run = validate_resume_run(args.resume_run)
+            output_root = resume_run.parent
+            output_root_source = "resume_run"
+        else:
+            output_root, output_root_source = resolve_output_root(
+                args.output_root,
+                config_path=args.local_config,
+            )
+
+        if args.show_output_root:
+            print(f"Capture output root: {output_root}")
+            print(f"Output root source: {output_root_source}")
+            print("Storage policy: external raw captures; synchronized repository output is blocked.")
+            return 0
+
         rows = load_input_rows(args.input)
         if args.smoke:
             rows = select_smoke_rows(rows)
@@ -1598,8 +1771,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             "options": EndpointSettings(concurrency=args.options_concurrency),
         }
         if args.dry_run:
-            # For the displayed plan, use the quote settings for batching and count
-            # the other endpoint tasks directly.
             plan_tasks = []
             for endpoint in endpoints:
                 plan_tasks.extend(build_tasks(rows, (endpoint,), settings_by_endpoint[endpoint]))
@@ -1616,20 +1787,30 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "settings_by_endpoint": {key: asdict(value) for key, value in settings_by_endpoint.items()},
                 "history_included": False,
                 "network_requests_sent": 0,
+                "storage": {
+                    "policy": "external_raw_capture",
+                    "output_root": str(output_root),
+                    "output_root_source": output_root_source,
+                    "repository_output_allowed": False,
+                },
             }
             print(json.dumps(plan, indent=2))
             return 0
 
+        prepare_output_root(output_root)
+        print(f"Capture output root: {output_root} ({output_root_source})")
+        print("Storage policy: external raw captures; synchronized repository output is blocked.")
         run_dir, manifest = run_capture(
             rows,
             input_file=args.input,
-            outdir=args.outdir,
+            outdir=output_root,
             endpoints=endpoints,
             settings_by_endpoint=settings_by_endpoint,
             timeout_seconds=args.timeout,
             retry_policy=retry_policy,
             user_agent=args.user_agent,
-            resume_run=args.resume_run,
+            resume_run=resume_run,
+            output_root_source=output_root_source,
         )
         print(f"Run folder: {run_dir}")
         print(f"Completed tasks: {manifest['summary']['task_count']}")
@@ -1639,7 +1820,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:
-        print("Interrupted. Re-run with --resume-run and the existing run folder.", file=sys.stderr)
+        print("Interrupted. Re-run with --resume-run and the existing external run folder.", file=sys.stderr)
         return 130
 
 

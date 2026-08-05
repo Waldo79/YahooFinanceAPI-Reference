@@ -8,3 +8,4 @@ Thumbs.db
 .pytest_cache/
 captures/local/
 .pytest-temp/
+config/local/fast_mode_local.json

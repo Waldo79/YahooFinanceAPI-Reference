@@ -339,6 +339,9 @@ def test_offline_smoke_run_writes_manifest_raw_metadata_and_summary(tmp_path: Pa
     saved = (run_dir / "run-manifest.json").read_text(encoding="utf-8")
     assert "test-crumb" not in saved
     assert manifest["privacy"]["crumb_persisted"] is False
+    assert manifest["storage"]["policy"] == "external_raw_capture"
+    assert manifest["storage"]["repository_output_allowed"] is False
+    assert manifest["storage"]["absolute_output_path_persisted"] is False
 
 
 def test_dry_run_full_universe_task_count(tmp_path: Path):
@@ -400,3 +403,94 @@ def test_persist_retest_updates_rewrites_primary_metadata_and_checkpoint(tmp_pat
     assert saved["request_url_redacted"].endswith("REDACTED")
     loaded = fast.load_checkpoint(run_state.checkpoint_path)
     assert loaded["quote-batch-1"].request_results[0].classification == "BATCH_OMISSION_INDIVIDUAL_SUCCESS"
+
+
+def test_output_root_resolution_precedence(tmp_path: Path):
+    config_path = tmp_path / "config" / "fast_mode_local.json"
+    configured = tmp_path / "configured"
+    fast.write_local_output_config(config_path, configured)
+
+    resolved, source = fast.resolve_output_root(
+        tmp_path / "cli",
+        config_path=config_path,
+        environment={fast.OUTPUT_ROOT_ENVIRONMENT_VARIABLE: str(tmp_path / "environment")},
+    )
+    assert resolved == (tmp_path / "cli").resolve()
+    assert source == "command_line"
+
+    resolved, source = fast.resolve_output_root(
+        None,
+        config_path=config_path,
+        environment={fast.OUTPUT_ROOT_ENVIRONMENT_VARIABLE: str(tmp_path / "environment")},
+    )
+    assert resolved == (tmp_path / "environment").resolve()
+    assert source == "environment"
+
+    resolved, source = fast.resolve_output_root(None, config_path=config_path, environment={})
+    assert resolved == configured.resolve()
+    assert source == "local_config"
+
+
+def test_output_root_safe_default_is_outside_repository(tmp_path: Path):
+    missing_config = tmp_path / "missing.json"
+    resolved, source = fast.resolve_output_root(None, config_path=missing_config, environment={})
+    assert source == "safe_default"
+    assert fast.path_is_within(resolved, fast.REPOSITORY_ROOT) is False
+
+
+def test_repository_output_root_is_rejected():
+    with pytest.raises(fast.FastCaptureInputError, match="outside the synchronized repository"):
+        fast.validate_external_output_root(fast.REPOSITORY_ROOT / "captures" / "local" / "fast-mode")
+
+
+def test_local_output_config_round_trip(tmp_path: Path):
+    config_path = tmp_path / "config" / "fast_mode_local.json"
+    output_root = tmp_path / "external" / "fast-mode"
+    saved = fast.write_local_output_config(config_path, output_root)
+    assert saved == config_path.resolve()
+    payload = json.loads(saved.read_text(encoding="utf-8"))
+    assert payload["schema_version"] == 1
+    assert payload["output_root"] == str(output_root.resolve())
+    assert fast.load_local_output_root(config_path) == output_root.resolve()
+
+
+def test_prepare_output_root_creates_and_write_tests_directory(tmp_path: Path):
+    output_root = tmp_path / "new" / "fast-mode"
+    resolved = fast.prepare_output_root(output_root)
+    assert resolved.is_dir()
+    assert not list(resolved.glob(".fast-mode-write-test-*"))
+
+
+def test_resume_run_requires_external_checkpoint(tmp_path: Path):
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    with pytest.raises(fast.FastCaptureInputError, match="no checkpoint.jsonl"):
+        fast.validate_resume_run(run_dir)
+    (run_dir / "checkpoint.jsonl").write_text("", encoding="utf-8")
+    assert fast.validate_resume_run(run_dir) == run_dir.resolve()
+
+
+def test_parser_accepts_output_root_and_legacy_outdir_alias(tmp_path: Path):
+    parser = fast.build_parser()
+    modern = parser.parse_args(["--output-root", str(tmp_path / "modern")])
+    legacy = parser.parse_args(["--outdir", str(tmp_path / "legacy")])
+    assert modern.output_root == tmp_path / "modern"
+    assert legacy.output_root == tmp_path / "legacy"
+
+
+def test_show_output_root_exits_without_loading_input(tmp_path: Path, capsys):
+    missing_input = tmp_path / "does-not-exist.csv"
+    output_root = tmp_path / "external"
+    exit_code = fast.main(
+        [
+            "--input",
+            str(missing_input),
+            "--output-root",
+            str(output_root),
+            "--show-output-root",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert str(output_root.resolve()) in captured.out
+    assert "repository output is blocked" in captured.out
