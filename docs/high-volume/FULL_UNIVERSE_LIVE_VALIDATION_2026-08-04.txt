@@ -1,0 +1,99 @@
+Fast-mode v0.5.0-candidate.2 full-universe live validation
+==========================================================
+Validation date (local): 2026-08-04
+Implementation commit: a477fa9
+Implementation branch: work/fast-mode-v0.5.0-candidate-2
+Utility version: 0.5.0-candidate.2
+
+Scope
+-----
+The prepared 1,547-row Fast-mode request list was captured against the Quote,
+QuoteSummary, Chart, and Options endpoint families. Raw Yahoo responses remain
+local under captures/local and are not included in this repository record.
+
+Input accounting
+----------------
+- Input rows: 1,547
+- Unique symbols: 1,537
+- Intentional duplicate controls: 10
+- Endpoint result coverage: 1,547 rows x 4 endpoint families = 6,188
+  per-symbol endpoint results
+
+Full-run settings
+-----------------
+- Quote: batch size 100, concurrency 4
+- QuoteSummary: concurrency 10
+- Chart: concurrency 10, range 5d, interval 1d
+- Options: concurrency 5
+- Maximum attempts: 3
+- Backoff seconds: 1, 3
+- Request timeout: 20 seconds
+
+Full-run accounting
+-------------------
+- Run identifier: 2026-08-05T03-28-02.493Z_fast-run
+- Started UTC: 2026-08-05T03:28:02.493Z
+- Completed UTC: 2026-08-05T03:30:48.245Z
+- Network tasks: 4,657
+- Per-symbol endpoint results: 6,188
+- Retry attempts beyond initial attempts: 20
+- Raw-response bytes recorded locally: 28,808,071
+- Elapsed seconds: 165.753
+- Network tasks per second: 28.096
+
+Endpoint results from the full run
+----------------------------------
+- Quote: 1,547 SUCCESS_RESULT_RETURNED
+- QuoteSummary: 1,547 SUCCESS_RESULT_RETURNED
+- Chart: 1,542 SUCCESS_RESULT_RETURNED; 5 HTTP_ERROR_429
+- Options: 740 SUCCESS_RESULT_RETURNED;
+  807 NOT_OPTIONABLE_OR_NO_CHAIN
+
+Rate-limit event and recovery
+-----------------------------
+Ten Chart tasks received HTTP 429 on their first two attempts. Five succeeded
+on their third attempt: SEMAX, VRSN, SMAIX, PCDIX, and TEPAX.
+
+Five Chart tasks remained HTTP_ERROR_429 after three attempts: MSTIX, TXRIX,
+OWVAX, DSSMX, and PFG. They were retried in a separate Chart-only run using
+concurrency 1, maximum attempts 4, and backoff seconds 5, 15, and 30.
+
+- Recovery run identifier: 2026-08-05T03-50-18.419Z_fast-run
+- Recovery tasks: 5
+- SUCCESS_RESULT_RETURNED: 5
+- Review results: 0
+
+Final logical endpoint coverage
+-------------------------------
+- Quote: complete for all 1,547 input rows
+- QuoteSummary: complete for all 1,547 input rows
+- Chart: complete for all 1,547 input rows after the recovery run
+- Options: complete for all 1,547 input rows; 807 no-chain outcomes are normal,
+  nonfatal classifications
+- Unresolved review results after recovery: 0
+
+Repository and privacy checks
+-----------------------------
+- Complete repository test suite before the implementation commit: 121 passed
+- git diff --check and staged diff check: passed
+- Candidate implementation commit: a477fa9
+- Audit files contain no persisted crumb, Cookie, Set-Cookie, Authorization
+  value, local Windows username, or local absolute user path
+- Manifest privacy flags record crumb/cookie/authorization persistence as false
+  and request URL redaction as true
+- Raw-response files were not included in the sanitized audit archive, so their
+  recorded SHA-256 values were not independently recalculated during this audit
+
+Local evidence references
+-------------------------
+- Fast_Mode_Full_1547_Run_Audit.zip
+  SHA-256: 11133da3a365abf674733a2391b31f07164123b8ebeba7496d22f677f1608b84
+- Verify 1d.txt (five-symbol recovery transcript)
+  SHA-256: 0a31bdd75f8559591cc6af7a5ee2a3bd57164d39b004f010dc84be8f52d7695d
+
+Conclusion
+----------
+v0.5.0-candidate.2 completed the full prepared universe. The only unresolved
+full-run results were five temporary Yahoo Chart rate limits, and all five were
+recovered successfully in the controlled sequential retry run. No repeat of
+the full 1,547-row capture is required.

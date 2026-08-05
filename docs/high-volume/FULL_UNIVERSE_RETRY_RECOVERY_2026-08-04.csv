@@ -1,0 +1,6 @@
+symbol,endpoint,full_run_classification,full_run_http_status,full_run_attempts,recovery_concurrency,recovery_max_attempts,recovery_backoff_seconds,recovery_classification,recovery_review_required
+MSTIX,chart,HTTP_ERROR_429,429,3,1,4,"5;15;30",SUCCESS_RESULT_RETURNED,False
+TXRIX,chart,HTTP_ERROR_429,429,3,1,4,"5;15;30",SUCCESS_RESULT_RETURNED,False
+OWVAX,chart,HTTP_ERROR_429,429,3,1,4,"5;15;30",SUCCESS_RESULT_RETURNED,False
+DSSMX,chart,HTTP_ERROR_429,429,3,1,4,"5;15;30",SUCCESS_RESULT_RETURNED,False
+PFG,chart,HTTP_ERROR_429,429,3,1,4,"5;15;30",SUCCESS_RESULT_RETURNED,False
