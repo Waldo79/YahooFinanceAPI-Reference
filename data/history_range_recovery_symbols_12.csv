@@ -1,0 +1,13 @@
+Symbol,Prior Classification,Reason
+^SPTSEM,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+^SPTSES,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+^SMLF-IV,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+^SPSUPX,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+^SPTSECP3,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+^VIXEQ,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+^FTT1X,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+^CASE30,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+SPAXX,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+FDLXX,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+FSPXX,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit
+^SPLK20LP,REQUEST_RANGE_NOT_SUPPORTED,1900-through-current daily request exceeded Yahoo 100-year limit

@@ -1,0 +1,6 @@
+path,bytes,sha256,change_type,purpose
+CHANGELOG_long_history_v0_1_0_candidate_4.md,979,751158cb3ce779fc2c5620a4628c65cc8a3419e4ee9c278a97ddf24e0531ca80,new,Candidate.4 release notes
+docs/high-volume/LONG_HISTORY_COMPACT_SCHEMA_PROTOTYPE.md,4164,37f5e61e10e8793582ecf98d54c03e3a1f91d506cffbf8280895d583a2a02003,new,"Safety, schema, verification, and usage guide"
+tests/test_history_sqlite_compact_prototype.py,14196,e1a04bd4bee677ee6082eb0d4cfb7b0fec597d1454aec38e874138f9ee58ee0f,new,Nine offline prototype tests
+tools/capture-utility/HISTORY_CAPTURE_README.md,9796,ada53e2f84c1a7d838b99a3fb1dbf61ffc505ae0502b334498127f73f552fdf9,replace,Adds candidate.4 compact-schema workflow
+tools/capture-utility/history_sqlite_compact_prototype.py,38131,d454147e6d921ed9eccb374f6d66f92734c4376b6d9569bc2efc6b80061269c5,new,Read-only source and copy-based compact prototype utility

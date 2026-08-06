@@ -1,0 +1,7 @@
+path,action,purpose
+CHANGELOG_long_history_v0_1_0_candidate_3.md,add,Candidate.3 audit change record
+MANIFEST_long_history_v0_1_0_candidate_3.csv,add,Package inventory
+docs/high-volume/LONG_HISTORY_SQLITE_AUDIT.md,add,Read-only audit workflow and interpretation
+tests/test_history_sqlite_audit.py,add,Offline read-only audit tests
+tools/capture-utility/HISTORY_CAPTURE_README.md,replace,Document candidate.3 audit alongside candidate.2 capture
+tools/capture-utility/history_sqlite_audit.py,add,Read-only SQLite size and structure audit utility

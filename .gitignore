@@ -9,3 +9,4 @@ Thumbs.db
 captures/local/
 .pytest-temp/
 config/local/fast_mode_local.json
+config/local/history_capture_local.json

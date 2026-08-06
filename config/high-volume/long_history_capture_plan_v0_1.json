@@ -1,0 +1,44 @@
+{
+  "component": "Yahoo Finance long-history archive",
+  "version": "0.1.0-candidate.2",
+  "authoritative_storage": {
+    "database": "<external-root>/history.sqlite",
+    "raw_responses": "<external-root>/runs/<run-folder>/raw/chart/*.json.gz",
+    "repository_output_allowed": false
+  },
+  "supported_intervals": [
+    "1d",
+    "1wk",
+    "1mo"
+  ],
+  "default_interval": "1d",
+  "default_overlap_days": 30,
+  "default_concurrency": 5,
+  "default_timeout_seconds": 30,
+  "default_maximum_attempts": 3,
+  "default_retry_delays_seconds": [
+    2,
+    10
+  ],
+  "modes": {
+    "baseline": "Request all available history for each selected symbol.",
+    "sync": "Request new history plus a configurable overlap; symbols without a baseline automatically receive a full request.",
+    "refresh-flagged": "Request complete history only for symbols flagged by corporate-action, adjusted-history, or missing-bar changes."
+  },
+  "change_policy": {
+    "new_bars": "insert",
+    "revised_bars": "replace current row and preserve old/new values in bar_revisions",
+    "missing_bars": "record MISSING_FROM_REFRESH and retain the stored bar",
+    "new_or_revised_corporate_actions": "preserve event change and flag symbol for full refresh",
+    "adjusted_close_revision_during_sync": "flag symbol for full refresh"
+  },
+  "intraday_included": false,
+  "xlsx_export_included": false,
+  "network_requests_in_offline_tests": 0,
+  "baseline_request_policy": {
+    "start_utc": "1900-01-01T00:00:00Z",
+    "end": "exclusive through-date boundary",
+    "reason": "Explicit period bounds prevent Yahoo range=max from silently returning a coarser granularity.",
+    "granularity_validation": "Returned meta.dataGranularity must equal the requested interval."
+  }
+}

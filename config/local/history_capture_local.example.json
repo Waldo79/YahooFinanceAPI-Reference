@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "output_root": "C:\\Users\\<name>\\Downloads\\YAHOO\\Captures\\long-history",
+  "purpose": "Copy to history_capture_local.json and keep the real machine-local file untracked."
+}

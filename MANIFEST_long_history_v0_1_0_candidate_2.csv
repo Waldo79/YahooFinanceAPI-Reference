@@ -1,0 +1,11 @@
+path,action,purpose
+.gitignore,replace,Ignore the machine-local long-history configuration.
+CHANGELOG_long_history_v0_1_0_candidate_2.md,new,Record candidate.2 corrections and recovery policy.
+MANIFEST_long_history_v0_1_0_candidate_2.csv,new,List package contents.
+config/high-volume/long_history_capture_plan_v0_1.json,replace,Document explicit baseline bounds and granularity validation.
+config/local/history_capture_local.example.json,replace,Provide a safe external-storage configuration example.
+docs/high-volume/LONG_HISTORY_STORAGE_AND_SYNC.md,replace,Document corrected baseline and incremental synchronization design.
+tests/test_history_capture_utility.py,replace,Verify parsing storage revision checkpoint pre-1970 and granularity behavior.
+tests/test_repository_hygiene.py,replace,Require the machine-local history configuration to remain ignored.
+tools/capture-utility/HISTORY_CAPTURE_README.md,replace,Provide corrected operational commands and recovery guidance.
+tools/capture-utility/yahoo_history_capture.py,replace,Implement corrected long-history baseline and incremental synchronization.
