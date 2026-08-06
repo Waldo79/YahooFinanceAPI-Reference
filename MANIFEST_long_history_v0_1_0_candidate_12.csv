@@ -1,0 +1,5 @@
+relative_path,bytes,sha256,purpose
+CHANGELOG_long_history_v0_1_0_candidate_12.md,890,3b7a5515c70edf1ea5fb513f156c4a55eda400bb2b7ee7dbe0dfcf9899a356cb,candidate changelog
+README.md,9210,f4d7fc50c0ec8ce3ff2f91884c0e0053e3c7a00205c61f58df170f9e6d59e540,root Long-history navigation and public safety summary
+docs/high-volume/LONG_HISTORY_OVERVIEW.md,4157,ee5a780da045ee062c5301c992de725080a9ae06971e4d04430edda11fe010a9,"Long-history subsystem map, commands, and safety boundary"
+tests/test_long_history_documentation.py,2694,38d64b8556f999d8123ac0378d449fc9da4df94ba5e646796d7c5632b0de2c47,offline Long-history documentation tests

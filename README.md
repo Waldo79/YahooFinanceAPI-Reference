@@ -124,6 +124,31 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 - `docs/specifications/study-05-chart-parameter-variation-protocol-v0.5.0-draft.md`
 - `docs/verification/study-05-chart-parameter-variation-validation-2026-07-30.md`
 
+## Long-history subsystem
+
+Long History is a separate, additive subsystem from the Fast-mode snapshot engine and
+the v0.5.0 comparative studies. It captures daily, weekly, or monthly Chart history,
+preserves compressed raw responses outside the repository, maintains normalized SQLite
+archives, supports verified compact incremental synchronization, applies reviewed
+Long-history exclusions, and exports the verified compact archive to XLSX.
+
+The original `history.sqlite` and verified `history_compact.sqlite` remain in their
+existing external archive locations. Do not move, replace, rename, or delete either
+database. The XLSX exporter opens only the compact database with SQLite URI `mode=ro`
+and `PRAGMA query_only=ON`, performs no network requests, and writes a new external
+export folder.
+
+Start with:
+
+- `docs/high-volume/LONG_HISTORY_OVERVIEW.md` — public subsystem map and safety boundary
+- `tools/capture-utility/HISTORY_CAPTURE_README.md` — detailed capture, compact, Sync,
+  exclusion, and recovery workflow
+- `docs/high-volume/LONG_HISTORY_XLSX_EXPORT.md` — read-only XLSX export commands and
+  workbook layout
+
+Long-history development does not change the formal v0.4.3 release or the separate
+v0.5.0-draft study line.
+
 ## Main files
 
 - `tools/capture-utility/yahoo_capture.py` — Quote evidence capture and run-validation utility
@@ -135,6 +160,11 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 - `tools/exchange-region-study/run_exchange_region_quote_study.py` — Study 03 capture tool
 - `tools/market-state-study/run_market_state_transition_study.py` — Study 04 interval capture tool
 - `tools/chart-parameter-study/run_chart_parameter_variation_study.py` — Study 05 Chart parameter-variation tool
+- `tools/capture-utility/yahoo_history_capture.py` — Long-history baseline and legacy-archive synchronizer
+- `tools/capture-utility/history_sqlite_compact_rebuild.py` — verified compact archive builder
+- `tools/capture-utility/history_compact_incremental.py` — compact-schema incremental synchronizer
+- `tools/capture-utility/history_compact_xlsx_export.py` — read-only compact-archive XLSX exporter
+- `data/high-volume/long_history_exclusions_v0_1.csv` — reviewed Long-history exclusion policy
 - `tests/test_capture_utility.py` — offline capture and validation tests
 - `tests/test_session_mode_study.py` — Study 01 tests
 - `tests/test_security_type_quote_study.py` — Study 02A tests
@@ -142,6 +172,7 @@ See `tools/capture-utility/README.md` for the complete command reference, Window
 - `tests/test_exchange_region_quote_study.py` — Study 03 tests
 - `tests/test_market_state_transition_study.py` — Study 04 tests
 - `tests/test_chart_parameter_variation_study.py` — Study 05 tests
+- `tests/test_long_history_documentation.py` — Long-history public-documentation tests
 - `schemas/run-validation.schema.json` — JSON Schema for `run-validation.json`
 - `data/master_field_database.csv` — observed Yahoo API field database
 - `data/review_status_categories.csv` — review status definitions
