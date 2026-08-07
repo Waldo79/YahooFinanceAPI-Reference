@@ -1,0 +1,5 @@
+relative_path,bytes,sha256,purpose
+CHANGELOG_long_history_v0_1_0_candidate_13.md,899,a7c5050045962b256749df1ff1bdaa18f99d9ebf1c686cd230ba27510d66a877,candidate changelog
+docs/high-volume/LONG_HISTORY_XLSX_EXPORT.md,4457,854b9a25e3301a4b3c2c7c5dc9f2acd1de7fa91f294f6d6e40ae280dc564d9d5,"XLSX export workflow, progress controls, and safety guide"
+tests/test_history_compact_xlsx_export.py,17024,9975e3b43314b57196bf502f572fa31ecd68cd50eea8c4392eea62208114b5d7,offline exporter and progress-reporting tests
+tools/capture-utility/history_compact_xlsx_export.py,52135,9652c57d3b2c8fbec45eac5a11b0a0d163b847cd1cec28f3bbc93ea8121eaf22,streaming compact-database XLSX exporter with progress reporting

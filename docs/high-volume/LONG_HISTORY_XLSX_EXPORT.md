@@ -1,6 +1,6 @@
 # Yahoo Long-History Compact XLSX Export
 
-Candidate.11 adds a read-only, no-network XLSX exporter for the verified compact
+Candidate.13 provides the read-only, no-network XLSX exporter for the verified compact
 long-history database. It is additive and does not alter the baseline capture,
 compact synchronization, exclusion policy, or Fast-mode behavior.
 
@@ -69,6 +69,42 @@ Large datasets split automatically into numbered sheets before Excel's row
 limit. The writer streams worksheet XML and does not hold all bars in memory.
 It uses only the Python standard library.
 
+
+## Progress reporting
+
+Full exports now report progress immediately to standard error while preserving
+normal result output on standard output. The default cadence is every 250,000
+rows. Messages identify the current phase, processed and total rows, worksheet
+splits, worksheet packaging, ZIP verification, source fingerprint verification,
+and manifest/report completion.
+
+Example progress messages:
+
+```text
+[<UTC timestamp>] Phase: Counting selected rows and running SQLite quick_check
+[<UTC timestamp>] Writing Bars: 250,000/11,034,219 rows (2.3%); worksheet Bars
+[<UTC timestamp>] Opened worksheet Bars_002 for Bars
+[<UTC timestamp>] Phase: Finalizing XLSX package; compressing 15 worksheets
+[<UTC timestamp>] Packaging worksheet 3/15: Bars (1,000,000 data rows)
+[<UTC timestamp>] Phase: Verifying workbook ZIP integrity
+```
+
+Change the row cadence with:
+
+```cmd
+py tools\capture-utility\history_compact_xlsx_export.py --progress-every 100000
+```
+
+Suppress phase and row-progress messages with:
+
+```cmd
+py tools\capture-utility\history_compact_xlsx_export.py --quiet-progress
+```
+
+Progress is written to standard error so `--dry-run` continues to emit valid
+JSON on standard output. Progress reporting does not change workbook contents,
+source queries, database access mode, or the external-output safety boundary.
+
 ## Filters
 
 Examples:
@@ -90,6 +126,6 @@ accepts a `symbol` header or a one-column list.
 
 ## Candidate boundary
 
-Candidate.11 exports a verified compact database to a new XLSX workbook. It does
-not update either SQLite database, contact Yahoo, change exclusions, create a
+Candidate.13 adds bounded console progress to the verified compact-database XLSX export. It does
+not change workbook data, update either SQLite database, contact Yahoo, change exclusions, create a
 release tag, or replace any prior capture or evidence file.

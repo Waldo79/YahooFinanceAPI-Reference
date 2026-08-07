@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Export a verified compact Yahoo long-history database to streaming XLSX.
 
-Version 0.1.0-candidate.11. The verified ``history_compact.sqlite`` database is
+Version 0.1.0-candidate.13. The verified ``history_compact.sqlite`` database is
 opened with SQLite URI ``mode=ro`` and ``PRAGMA query_only=ON``. The exporter
 uses only the Python standard library, performs no network requests, and writes
 only a new external export folder. It never changes, moves, replaces, or deletes
@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Iterable, Iterator, Mapping, Sequence
 from xml.sax.saxutils import escape
 
-UTILITY_VERSION = "0.1.0-candidate.11"
+UTILITY_VERSION = "0.1.0-candidate.13"
 COMPACT_SCHEMA_NAME = "compact_long_history"
 COMPACT_SCHEMA_VERSION = "1"
 COMPACT_DATABASE_FILENAME = "history_compact.sqlite"
@@ -41,6 +41,7 @@ _DEFAULT_ARCHIVE_PARENT = (
 DEFAULT_EXTERNAL_ROOT = _DEFAULT_ARCHIVE_PARENT / "Captures" / "long-history"
 EXCEL_MAX_ROWS = 1_048_576
 DEFAULT_MAX_DATA_ROWS_PER_SHEET = 1_000_000
+DEFAULT_PROGRESS_EVERY_ROWS = 250_000
 
 
 class ExportError(RuntimeError):
@@ -70,6 +71,39 @@ class ExportFilters:
     start_epoch: int | None
     end_epoch_exclusive: int | None
     include_revisions: bool
+
+
+@dataclass
+class ProgressReporter:
+    every_rows: int = DEFAULT_PROGRESS_EVERY_ROWS
+    enabled: bool = True
+
+    def emit(self, message: str) -> None:
+        if self.enabled:
+            print(f"[{format_utc(utc_now())}] {message}", file=sys.stderr, flush=True)
+
+    def phase(self, message: str) -> None:
+        self.emit(f"Phase: {message}")
+
+    def row_update(
+        self,
+        label: str,
+        processed: int,
+        total: int | None,
+        sheet_name: str,
+        *,
+        force: bool = False,
+    ) -> None:
+        if not self.enabled or (not force and processed % self.every_rows != 0):
+            return
+        if total is None:
+            detail = f"{processed:,} rows"
+        elif total == 0:
+            detail = "0/0 rows (100.0%)"
+        else:
+            percentage = min(100.0, processed * 100.0 / total)
+            detail = f"{processed:,}/{total:,} rows ({percentage:.1f}%)"
+        self.emit(f"Writing {label}: {detail}; worksheet {sheet_name}")
 
 
 def utc_now() -> datetime:
@@ -722,9 +756,18 @@ def app_xml(sheet_names: Sequence[str]) -> str:
 <TitlesOfParts><vt:vector size="{len(sheet_names)}" baseType="lpstr">{titles}</vt:vector></TitlesOfParts><Company></Company><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>false</HyperlinksChanged><AppVersion>16.0300</AppVersion></Properties>'''
 
 
-def write_xlsx(path: Path, builders: Sequence[SheetBuilder], created: datetime) -> list[SheetInfo]:
+def write_xlsx(
+    path: Path,
+    builders: Sequence[SheetBuilder],
+    created: datetime,
+    reporter: ProgressReporter | None = None,
+) -> list[SheetInfo]:
+    if reporter is not None:
+        reporter.phase("Closing and flushing worksheet row files")
     infos = [builder.close() for builder in builders]
     names = [info.name for info in infos]
+    if reporter is not None:
+        reporter.phase(f"Finalizing XLSX package; compressing {len(builders)} worksheets")
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6, allowZip64=True) as archive:
         archive.writestr("[Content_Types].xml", content_types_xml(len(builders)))
         archive.writestr("_rels/.rels", package_rels_xml())
@@ -733,12 +776,21 @@ def write_xlsx(path: Path, builders: Sequence[SheetBuilder], created: datetime) 
         archive.writestr("xl/workbook.xml", workbook_xml(names))
         archive.writestr("xl/_rels/workbook.xml.rels", workbook_rels_xml(len(builders)))
         archive.writestr("xl/styles.xml", styles_xml())
-        for index, builder in enumerate(builders, start=1):
+        for index, (builder, info) in enumerate(zip(builders, infos), start=1):
+            if reporter is not None:
+                reporter.emit(
+                    f"Packaging worksheet {index}/{len(builders)}: "
+                    f"{info.name} ({info.data_rows:,} data rows)"
+                )
             add_stream_to_zip(archive, f"xl/worksheets/sheet{index}.xml", sheet_xml(builder))
+    if reporter is not None:
+        reporter.phase("Verifying workbook ZIP integrity")
     with zipfile.ZipFile(path, "r") as archive:
         bad = archive.testzip()
         if bad is not None:
             raise ExportError(f"Generated XLSX failed ZIP verification at {bad}.")
+    if reporter is not None:
+        reporter.emit("Workbook ZIP integrity: PASS")
     return infos
 
 
@@ -750,18 +802,30 @@ def split_rows_into_sheets(
     styles: Sequence[int],
     rows: Iterable[Sequence[Any]],
     max_data_rows: int,
+    total_rows: int | None = None,
+    reporter: ProgressReporter | None = None,
 ) -> list[SheetBuilder]:
     builders: list[SheetBuilder] = []
     current: SheetBuilder | None = None
+    processed = 0
     for row in rows:
         if current is None or current.row_count - 1 >= max_data_rows:
             name = base_name if not builders else f"{base_name}_{len(builders) + 1:03d}"
             current = SheetBuilder(temp_dir, name, headers, widths, styles)
             builders.append(current)
+            if reporter is not None:
+                reporter.emit(f"Opened worksheet {name} for {base_name}")
         current.write_row(row)
+        processed += 1
+        if reporter is not None:
+            reporter.row_update(base_name, processed, total_rows, current.name)
     if current is None:
         current = SheetBuilder(temp_dir, base_name, headers, widths, styles)
         builders.append(current)
+        if reporter is not None:
+            reporter.emit(f"Opened worksheet {base_name} for {base_name}")
+    if reporter is not None and (processed == 0 or processed % reporter.every_rows != 0):
+        reporter.row_update(base_name, processed, total_rows, current.name, force=True)
     return builders
 
 
@@ -818,8 +882,11 @@ def export_workbook(
     started_at: datetime,
     database_resolution: str,
     source_database_file: str,
+    reporter: ProgressReporter | None = None,
 ) -> tuple[list[SheetInfo], dict[str, int]]:
     counts = source_counts(connection, filters)
+    if reporter is not None:
+        reporter.phase("Preparing worksheet row data")
     with tempfile.TemporaryDirectory(prefix=".history-xlsx-", dir=output_path.parent) as temp_name:
         temp_dir = Path(temp_name)
         builders: list[SheetBuilder] = []
@@ -852,6 +919,7 @@ def export_workbook(
             (18, 12, 12, 22, 22, 12, 20, 36, 24),
             (0, 0, 3, 2, 2, 3, 0, 0, 0),
             symbol_summary_rows(connection, filters), max_data_rows,
+            reporter=reporter,
         ))
         builders.extend(split_rows_into_sheets(
             temp_dir, "Bars",
@@ -859,6 +927,7 @@ def export_workbook(
             (18, 10, 22, 14, 14, 14, 14, 16, 14, 30, 30, 52, 66),
             (0, 0, 2, 4, 4, 4, 4, 4, 3, 0, 0, 0, 0),
             bars_rows(connection, filters), max_data_rows,
+            total_rows=counts["bars"], reporter=reporter,
         ))
         builders.extend(split_rows_into_sheets(
             temp_dir, "Events",
@@ -866,6 +935,7 @@ def export_workbook(
             (18, 10, 16, 22, 36, 72, 30, 30, 52, 66),
             (0, 0, 0, 2, 0, 0, 0, 0, 0, 0),
             events_rows(connection, filters), max_data_rows,
+            total_rows=counts["events"], reporter=reporter,
         ))
         if filters.include_revisions:
             builders.extend(split_rows_into_sheets(
@@ -874,6 +944,7 @@ def export_workbook(
                 (14, 30, 18, 10, 22, 24, 16, 36, 60, 60),
                 (3, 0, 0, 0, 2, 0, 0, 0, 0, 0),
                 bar_revision_rows(connection, filters), max_data_rows,
+                total_rows=counts["bar_revisions"], reporter=reporter,
             ))
             builders.extend(split_rows_into_sheets(
                 temp_dir, "EventRevisions",
@@ -881,8 +952,9 @@ def export_workbook(
                 (14, 30, 18, 10, 16, 22, 24, 16, 60, 60),
                 (3, 0, 0, 0, 0, 2, 0, 0, 0, 0),
                 event_revision_rows(connection, filters), max_data_rows,
+                total_rows=counts["event_revisions"], reporter=reporter,
             ))
-        infos = write_xlsx(output_path, builders, started_at)
+        infos = write_xlsx(output_path, builders, started_at, reporter)
     return infos, counts
 
 
@@ -904,21 +976,42 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-data-rows-per-sheet", type=int, default=DEFAULT_MAX_DATA_ROWS_PER_SHEET,
         help=f"Split data sheets after this many rows (1 to {EXCEL_MAX_ROWS - 1}).",
     )
+    parser.add_argument(
+        "--progress-every", type=int, default=DEFAULT_PROGRESS_EVERY_ROWS,
+        help=f"Report row progress after this many rows (default: {DEFAULT_PROGRESS_EVERY_ROWS}).",
+    )
+    parser.add_argument(
+        "--quiet-progress", action="store_true",
+        help="Suppress phase and row-progress messages; final result output is unchanged.",
+    )
     return parser
 
 
 def run_export(args: argparse.Namespace) -> tuple[Path | None, dict[str, Any]]:
     if not 1 <= args.max_data_rows_per_sheet <= EXCEL_MAX_ROWS - 1:
         raise ExportError(f"--max-data-rows-per-sheet must be from 1 through {EXCEL_MAX_ROWS - 1}.")
+    progress_every = int(getattr(args, "progress_every", DEFAULT_PROGRESS_EVERY_ROWS))
+    if progress_every < 1:
+        raise ExportError("--progress-every must be at least 1.")
+    reporter = ProgressReporter(progress_every, not bool(getattr(args, "quiet_progress", False)))
     started_at = utc_now()
+    reporter.phase("Resolving verified compact database")
     database_path, resolution, archive_root = resolve_compact_database(args.database, args.rebuild_dir)
+    reporter.emit(f"Verified compact database selected: {database_path.name} ({resolution})")
     before = fingerprint_files(database_path)
+    reporter.phase("Opening compact database read-only")
     connection = connect_read_only(database_path)
     try:
         meta = validate_compact_schema(connection)
         filters = resolve_filters(connection, args)
+        reporter.phase("Counting selected rows and running SQLite quick_check")
         counts = source_counts(connection, filters)
         quick_check = str(connection.execute("PRAGMA quick_check").fetchone()[0])
+        reporter.emit(
+            f"Planned export: {counts['symbols']:,} symbols; {counts['bars']:,} bars; "
+            f"{counts['events']:,} events; {counts['bar_revisions']:,} bar revisions; "
+            f"{counts['event_revisions']:,} event revisions"
+        )
         if quick_check != "ok":
             raise ExportError(f"Compact database quick_check failed: {quick_check}")
         if args.dry_run:
@@ -940,6 +1033,7 @@ def run_export(args: argparse.Namespace) -> tuple[Path | None, dict[str, Any]]:
                 "files_written": 0,
                 "source_database_unchanged": True,
             }
+            reporter.emit("Dry-run verification complete; no files written")
             return None, plan
 
         output_dir = args.output_dir or (
@@ -954,18 +1048,24 @@ def run_export(args: argparse.Namespace) -> tuple[Path | None, dict[str, Any]]:
         if Path(output_name).name != output_name:
             raise ExportError("--output-name must be a filename, not a path.")
         workbook_path = output_dir / output_name
+        reporter.emit(f"External export folder created: {output_dir}")
         infos, counts = export_workbook(
             connection, workbook_path, filters, args.max_data_rows_per_sheet,
-            started_at, resolution, database_path.name,
+            started_at, resolution, database_path.name, reporter,
         )
     finally:
         connection.close()
+        reporter.emit("Source database connection closed")
 
     completed_at = utc_now()
+    reporter.phase("Verifying source database fingerprint")
     after = fingerprint_files(database_path)
     unchanged = main_database_unchanged(before, after)
     if not unchanged:
         raise ExportError("Source compact database changed during export.")
+    reporter.emit("Source compact database fingerprint unchanged: PASS")
+    reporter.phase("Calculating workbook SHA-256")
+    workbook_sha256 = sha256_file(workbook_path)
     manifest: dict[str, Any] = {
         "utility_version": UTILITY_VERSION,
         "started_at_utc": format_utc(started_at),
@@ -981,16 +1081,18 @@ def run_export(args: argparse.Namespace) -> tuple[Path | None, dict[str, Any]]:
         "source_counts": counts,
         "workbook_file": workbook_path.name,
         "workbook_bytes": workbook_path.stat().st_size,
-        "workbook_sha256": sha256_file(workbook_path),
+        "workbook_sha256": workbook_sha256,
         "sheets": [asdict(info) for info in infos],
         "network_requests_sent": 0,
         "legacy_database_opened": False,
         "database_files_moved_or_deleted": False,
     }
+    reporter.phase("Writing export manifest and report")
     (output_dir / "export-manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     write_report(output_dir / "export-report.txt", manifest)
+    reporter.emit("Export verification complete")
     return output_dir, manifest
 
 

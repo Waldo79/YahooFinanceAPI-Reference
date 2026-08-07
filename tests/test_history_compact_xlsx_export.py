@@ -244,3 +244,71 @@ def test_pre_1970_timestamps_and_xml_character_filtering() -> None:
     assert exporter.epoch_to_datetime(-1) == exporter.datetime(1969, 12, 31, 23, 59, 59, tzinfo=exporter.timezone.utc)
     cleaned = exporter.xml_text('A\x00B\ufffeC<&"')
     assert cleaned == "ABC&lt;&amp;&quot;"
+
+
+
+def test_progress_reports_rows_and_finalization(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    archive = tmp_path / "archive"; archive.mkdir()
+    db = archive / exporter.COMPACT_DATABASE_FILENAME; create_compact(db, symbols=2, bars_each=4)
+    monkeypatch.setattr(exporter, "REPOSITORY_ROOT", tmp_path / "repo")
+    output = tmp_path / "progress"
+    args = exporter.build_parser().parse_args([
+        "--database", str(db), "--output-dir", str(output), "--progress-every", "3",
+    ])
+    exporter.run_export(args)
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "Phase: Resolving verified compact database" in captured.err
+    assert "Writing Bars: 3/8 rows (37.5%); worksheet Bars" in captured.err
+    assert "Writing Bars: 8/8 rows (100.0%)" in captured.err
+    assert "Phase: Finalizing XLSX package" in captured.err
+    assert "Packaging worksheet" in captured.err
+    assert "Phase: Verifying workbook ZIP integrity" in captured.err
+    assert "Export verification complete" in captured.err
+
+
+def test_quiet_progress_suppresses_progress(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    archive = tmp_path / "archive"; archive.mkdir()
+    db = archive / exporter.COMPACT_DATABASE_FILENAME; create_compact(db)
+    monkeypatch.setattr(exporter, "REPOSITORY_ROOT", tmp_path / "repo")
+    output = tmp_path / "quiet"
+    args = exporter.build_parser().parse_args([
+        "--database", str(db), "--output-dir", str(output), "--quiet-progress",
+    ])
+    exporter.run_export(args)
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_progress_every_must_be_positive(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    archive = tmp_path / "archive"; archive.mkdir()
+    db = archive / exporter.COMPACT_DATABASE_FILENAME; create_compact(db)
+    monkeypatch.setattr(exporter, "REPOSITORY_ROOT", tmp_path / "repo")
+    args = exporter.build_parser().parse_args([
+        "--database", str(db), "--dry-run", "--progress-every", "0",
+    ])
+    with pytest.raises(exporter.ExportError, match="at least 1"):
+        exporter.run_export(args)
+
+
+def test_dry_run_stdout_remains_json_while_progress_uses_stderr(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    archive = tmp_path / "archive"; archive.mkdir()
+    db = archive / exporter.COMPACT_DATABASE_FILENAME; create_compact(db)
+    monkeypatch.setattr(exporter, "REPOSITORY_ROOT", tmp_path / "repo")
+    result = exporter.main([
+        "--database", str(db), "--dry-run", "--smoke", "--progress-every", "2",
+    ])
+    captured = capsys.readouterr()
+    assert result == 0
+    payload = json.loads(captured.out)
+    assert payload["files_written"] == 0
+    assert payload["source_database_unchanged"] is True
+    assert "Phase: Resolving verified compact database" in captured.err
+    assert "Dry-run verification complete; no files written" in captured.err
