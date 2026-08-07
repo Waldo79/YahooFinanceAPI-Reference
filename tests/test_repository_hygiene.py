@@ -15,6 +15,16 @@ REQUIRED_IGNORE_PATTERNS = {
     "config/local/fast_mode_local.json",
     "config/local/history_capture_local.json",
 }
+LONG_HISTORY_DATABASE_SUFFIXES = {".sqlite", ".sqlite3", ".db"}
+LONG_HISTORY_BINARY_NAMES = {
+    "history.sqlite",
+    "history.sqlite-wal",
+    "history.sqlite-shm",
+    "history_compact.sqlite",
+    "history_compact.sqlite-wal",
+    "history_compact.sqlite-shm",
+    "Yahoo_Long_History.xlsx",
+}
 
 
 def _tracked_paths() -> list[str]:
@@ -68,4 +78,21 @@ def test_generated_private_or_accidentally_nested_files_are_not_tracked() -> Non
 
     assert not violations, "Repository hygiene violations:\n- " + "\n- ".join(
         sorted(violations)
+    )
+
+
+def test_long_history_databases_and_generated_workbooks_are_not_tracked() -> None:
+    violations: list[str] = []
+
+    for path in _tracked_paths():
+        item = Path(path)
+        if (
+            item.name in LONG_HISTORY_BINARY_NAMES
+            or item.suffix.casefold() in LONG_HISTORY_DATABASE_SUFFIXES
+        ):
+            violations.append(path)
+
+    assert not violations, (
+        "Long-history database or generated workbook must remain external:\n- "
+        + "\n- ".join(sorted(violations))
     )
